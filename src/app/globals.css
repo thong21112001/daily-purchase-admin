@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #fafafa;
+  --foreground: #18181b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #09090b;
+    --foreground: #f4f4f5;
+  }
+}
+
+html,
+body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Khóa triệt để tràn ngang trên Galaxy A35 5G */
+* {
+  box-sizing: border-box;
+}
+
+/* Đảm bảo số liệu và tiền tệ căn thẳng hàng dọc */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Safe area padding cho thiết bị di động có thanh điều hướng đáy */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
