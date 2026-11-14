@@ -22,23 +22,23 @@ export class CatalogService {
    * Tìm kiếm gợi ý mặt hàng tức thì theo từ khóa không dấu (Unaccented Search)
    * Sắp xếp theo độ phổ biến (usageCount giảm dần) để các món hay mua xuất hiện đầu tiên
    */
-  static async searchCatalogItems(query: string, limit = 10): Promise<ICatalogItem[]> {
+  static async searchCatalogItems(query: string, limit = 10): Promise<any[]> {
     await connectToDatabase();
 
     const cleanQuery = query.trim();
     if (!cleanQuery) {
       // Nếu không nhập gì, trả về top mặt hàng hay mua nhất
-      return CatalogItem.find().sort({ usageCount: -1 }).limit(limit).lean();
+      return (CatalogItem.find().sort({ usageCount: -1 }).limit(limit).lean() as any);
     }
 
     const norm = normalizeVietnamese(cleanQuery);
 
-    return CatalogItem.find({
+    return (CatalogItem.find({
       normalizedName: { $regex: norm, $options: "i" },
     })
       .sort({ usageCount: -1, lastUnitPrice: -1 })
       .limit(limit)
-      .lean();
+      .lean() as any);
   }
 
   /**

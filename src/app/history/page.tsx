@@ -51,7 +51,7 @@ interface PurchaseRecord {
 
 type DateFilterPreset = "today" | "yesterday" | "last_7_days" | "this_month" | "all";
 
-export default function HistoryPage() {
+function HistoryContent() {
   const { showToast } = useToast();
 
   const [preset, setPreset] = useState<DateFilterPreset>("this_month");
@@ -151,9 +151,8 @@ export default function HistoryPage() {
   }, [purchases]);
 
   return (
-    <AdminLayoutShell>
-      <div className="space-y-5">
-        {/* Header & Tổng chi kỳ lọc */}
+    <div className="space-y-5">
+      {/* Header & Tổng chi kỳ lọc */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200 dark:border-zinc-800 pb-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -361,6 +360,13 @@ export default function HistoryPage() {
           </div>
         )}
       </div>
+  );
+}
+
+export default function HistoryPage() {
+  return (
+    <AdminLayoutShell>
+      <HistoryContent />
     </AdminLayoutShell>
   );
 }

@@ -5,7 +5,6 @@ import { DesktopSidebar } from "./DesktopSidebar";
 import { MobileTopHeader } from "./MobileTopHeader";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { QuickEntryDrawer } from "@/components/entry/QuickEntryDrawer";
-import { ToastProvider } from "@/components/ui/Toast";
 
 interface LayoutContextType {
   openQuickEntry: () => void;
@@ -52,15 +51,14 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <ToastProvider>
-      <LayoutContext.Provider
-        value={{
-          openQuickEntry: () => setIsQuickEntryOpen(true),
-          todayTotal,
-          triggerRefresh,
-          refreshTick,
-        }}
-      >
+    <LayoutContext.Provider
+      value={{
+        openQuickEntry: () => setIsQuickEntryOpen(true),
+        todayTotal,
+        triggerRefresh,
+        refreshTick,
+      }}
+    >
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col lg:flex-row w-full max-w-full overflow-x-hidden">
           {/* 1. Sidebar cố định trên Desktop (w-64) */}
           <DesktopSidebar onOpenQuickEntry={() => setIsQuickEntryOpen(true)} />
@@ -91,6 +89,5 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
           />
         </div>
       </LayoutContext.Provider>
-    </ToastProvider>
   );
 }

@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { Plus, Trash2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { CustomSelect } from "@/components/ui/CustomSelect";
 import { ItemAutocomplete, type SelectedItemPayload } from "./ItemAutocomplete";
 import { DEFAULT_PURCHASE_CATEGORIES, COMMON_UNITS } from "@/lib/constants/categories";
 import { formatVND, parseVND, calculateLineTotal } from "@/lib/utils/currency";

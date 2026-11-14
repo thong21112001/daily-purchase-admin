@@ -4,6 +4,8 @@ import { cn } from "@/lib/utils/cn";
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "default" | "secondary" | "outline" | "destructive" | "ghost";
   size?: "default" | "sm" | "lg" | "icon";
+  loading?: boolean;
+  fullWidth?: boolean;
 }
 
 /**
@@ -11,7 +13,19 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
  * Vùng chạm tối thiểu bắt buộc >= 44px x 44px (Hard Lock #4)
  */
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "default", size = "default", ...props }, ref) => {
+  (
+    {
+      className,
+      variant = "default",
+      size = "default",
+      loading = false,
+      fullWidth = false,
+      children,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
     const baseStyles =
       "inline-flex items-center justify-center rounded-xl font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 dark:focus-visible:ring-zinc-300 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] cursor-pointer select-none";
 
@@ -38,9 +52,25 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        className={cn(baseStyles, variants[variant], sizes[size], className)}
+        disabled={disabled || loading}
+        className={cn(
+          baseStyles,
+          variants[variant],
+          sizes[size],
+          fullWidth && "w-full",
+          className
+        )}
         {...props}
-      />
+      >
+        {loading ? (
+          <div className="flex items-center gap-2">
+            <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            <span>{children}</span>
+          </div>
+        ) : (
+          children
+        )}
+      </button>
     );
   }
 );

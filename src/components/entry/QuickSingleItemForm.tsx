@@ -283,7 +283,7 @@ export function QuickSingleItemForm({ onSuccess, onCancel }: QuickSingleItemForm
           label="Nhóm hàng"
           id="category-select"
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(e: any) => setCategory(e.target.value)}
           options={DEFAULT_PURCHASE_CATEGORIES.map((c) => ({ value: c, label: c }))}
         />
 

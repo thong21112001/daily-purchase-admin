@@ -25,7 +25,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-export default function ReportsPage() {
+function ReportsContent() {
   const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -103,9 +103,8 @@ export default function ReportsPage() {
   };
 
   return (
-    <AdminLayoutShell>
-      <div className="space-y-6">
-        {/* Header & Bộ chọn tháng */}
+    <div className="space-y-6">
+      {/* Header & Bộ chọn tháng */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200 dark:border-zinc-800 pb-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -333,6 +332,13 @@ export default function ReportsPage() {
           </div>
         </section>
       </div>
+  );
+}
+
+export default function ReportsPage() {
+  return (
+    <AdminLayoutShell>
+      <ReportsContent />
     </AdminLayoutShell>
   );
 }

@@ -119,7 +119,7 @@ export function formatDateTimeVN(dateInput: Date | string | null | undefined): s
  * Lấy khoảng ngày phục vụ lọc sổ mua hàng
  */
 export function getDateRange(
-  rangeType: "today" | "yesterday" | "7days" | "this_month" | "custom",
+  rangeType: "today" | "yesterday" | "7days" | "last_7_days" | "this_month" | "custom",
   customStart?: string,
   customEnd?: string
 ): { startDateKey: string; endDateKey: string } {
@@ -132,7 +132,8 @@ export function getDateRange(
       const yesterday = getYesterdayKey();
       return { startDateKey: yesterday, endDateKey: yesterday };
     }
-    case "7days": {
+    case "7days":
+    case "last_7_days": {
       const past7 = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000);
       return { startDateKey: getDateKey(past7), endDateKey: today };
     }

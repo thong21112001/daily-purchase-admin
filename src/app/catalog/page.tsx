@@ -34,7 +34,7 @@ interface CatalogItemData {
   updatedAt: string;
 }
 
-export default function CatalogPage() {
+function CatalogContent() {
   const { showToast } = useToast();
 
   const [items, setItems] = useState<CatalogItemData[]>([]);
@@ -185,9 +185,8 @@ export default function CatalogPage() {
   };
 
   return (
-    <AdminLayoutShell>
-      <div className="space-y-5">
-        {/* Header */}
+    <div className="space-y-5">
+      {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200 dark:border-zinc-800 pb-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -380,7 +379,7 @@ export default function CatalogPage() {
               </label>
               <CustomSelect
                 value={formCategory}
-                onChange={setFormCategory}
+                onChange={(e) => setFormCategory(e.target.value)}
                 options={DEFAULT_PURCHASE_CATEGORIES.map((c) => ({ label: c, value: c }))}
               />
             </div>
@@ -451,6 +450,13 @@ export default function CatalogPage() {
           </form>
         </Modal>
       </div>
+  );
+}
+
+export default function CatalogPage() {
+  return (
+    <AdminLayoutShell>
+      <CatalogContent />
     </AdminLayoutShell>
   );
 }

@@ -10,8 +10,9 @@ export interface ToastMessage {
   message: string;
 }
 
-interface ToastContextType {
+export interface ToastContextType {
   toast: (message: string, type?: "success" | "error" | "info") => void;
+  showToast: (message: string, type?: "success" | "error" | "info") => void;
 }
 
 const ToastContext = createContext<ToastContextType | null>(null);
@@ -32,8 +33,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
+  const showToast = toast;
+
   return (
-    <ToastContext.Provider value={{ toast }}>
+    <ToastContext.Provider value={{ toast, showToast }}>
       {children}
       <div className="fixed bottom-20 sm:bottom-6 right-4 left-4 sm:left-auto sm:w-96 z-50 flex flex-col space-y-2 pointer-events-none">
         {toasts.map((t) => (
@@ -71,7 +74,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 export function useToast() {
   const context = useContext(ToastContext);
   if (!context) {
-    throw new Error("useToast must be used within a ToastProvider");
+    return {
+      toast: () => {},
+      showToast: () => {},
+    };
   }
   return context;
 }
