@@ -21,20 +21,22 @@
 2. [Technical Architecture & Serverless Optimization](#2-technical-architecture--serverless-optimization)
 3. [UI/UX Design Standards & Samsung Galaxy A35 5G Specification](#3-uiux-design-standards--samsung-galaxy-a35-5g-specification)
 4. [Core Data Modeling (Mongoose Schemas)](#4-core-data-modeling-mongoose-schemas)
-5. [Single-Owner Security Mechanism (Secret-Zero)](#5-single-owner-security-mechanism-secret-zero)
-6. [Local Installation & Setup](#6-local-installation--setup)
-7. [Automated Test Suites](#7-automated-test-suites)
-8. [Project Roadmap & Acceptance Status](#8-project-roadmap--acceptance-status)
+5. [API Endpoints & Phase 2 Capabilities](#5-api-endpoints--phase-2-capabilities)
+6. [Single-Owner Security Mechanism (Secret-Zero)](#6-single-owner-security-mechanism-secret-zero)
+7. [Local Installation & Setup](#7-local-installation--setup)
+8. [Automated Test Suites](#8-automated-test-suites)
+9. [Project Roadmap & Acceptance Status](#9-project-roadmap--acceptance-status)
 
 ---
 
 ## 1. 📖 Project Overview & Purpose
 
-**`daily-purchase-admin`** is a dedicated fullstack web application designed for a **Single-Owner** to record and track daily purchase/procurement expenses (groceries, market trips, supermarket visits, or personal business supplies):
-- **Instant On-Site Recording**: Open the app on Samsung Galaxy A35 5G right after checkout: item name, quantity, unit, unit price, total amount, location.
-- **Auto-Learning Catalog (`Auto-Learn Catalog`)**: Automatically learns items, units, and latest purchase prices from history to auto-fill future entries.
+**`daily-purchase-admin`** is a dedicated fullstack web application designed for a **Single-Owner** to record and track daily purchase/procurement expenses (tailored for coffee shop supplies, daily groceries, and food & beverage items):
+- **Instant On-Site Recording**: Open the app on Samsung Galaxy A35 5G right after checkout: item name, quantity, unit, unit price, total amount, supplier/market.
+- **Independent Purchase Codes**: Every entry automatically generates an atomic `PO-YYYYMMDD-XXX` code for clean record separation.
+- **Auto-Learning Catalog (`Auto-Learn Catalog`)**: Automatically learns items, units, and latest purchase prices from history to auto-fill future entries (with pre-configured starter items for coffee shop operations).
 - **Two-Way Currency Calculation**: Computes line totals from Quantity $\times$ Unit Price, or performs reverse calculation from Total Paid $/$ Quantity when buying bulk/random weight (e.g. 1.5kg costing 85,000 VND $\rightarrow$ auto-computes unit price: 56,667 VND/kg).
-- **100% Free on Vercel + MongoDB Atlas (M0)**: Optimized serverless connection caching with zero cold-start latency and zero infrastructure operating cost.
+- **100% Free on Vercel + MongoDB Atlas (M0)**: Serverless connection caching with zero cold-start latency and zero infrastructure operating cost.
 
 ---
 
@@ -75,7 +77,24 @@ The system is designed following **Minimal SaaS 2026–2027** standards, pixel-p
 
 ---
 
-## 5. 🔐 Single-Owner Security Mechanism (Secret-Zero)
+## 5. 🌐 API Endpoints & Phase 2 Capabilities
+
+| API Group | Endpoint | Method | Description |
+| :--- | :--- | :---: | :--- |
+| **Purchases** | `/api/purchases` | `GET` | List purchases with date, date-range, and unaccented token query filters |
+| | `/api/purchases` | `POST` | Create new purchase log, generate `PO-YYYYMMDD-XXX` code, auto-learn catalog |
+| | `/api/purchases/[id]` | `GET`, `PUT`, `DELETE` | Retrieve, update, or remove a purchase log |
+| **Catalog** | `/api/catalog` | `GET` | Instant unaccented auto-complete suggestions (`?q=...`) or full catalog query |
+| | `/api/catalog` | `POST` | Manually register a catalog item |
+| | `/api/catalog/[id]` | `PUT`, `DELETE` | Edit unit price, default unit, or delete catalog item |
+| **Reports** | `/api/reports` | `GET` | Consolidated KPIs (today/yesterday/month), daily spending, category breakdown |
+| **Export & Backup** | `/api/export/csv` | `GET` | Stream CSV file with UTF-8 BOM encoding for Microsoft Excel |
+| | `/api/export/backup` | `GET` | Download full JSON database snapshot |
+| | `/api/export/backup` | `POST` | Restore database using **Safe Merge / Upsert** strategy |
+
+---
+
+## 6. 🔐 Single-Owner Security Mechanism (Secret-Zero)
 
 - **No Public Registration**: Single-owner access only.
 - **Secret-Zero Policy (Hard Lock #3)**: Zero hardcoded credentials in source code. All secrets loaded from environment variables:
@@ -87,7 +106,7 @@ The system is designed following **Minimal SaaS 2026–2027** standards, pixel-p
 
 ---
 
-## 6. 💻 Local Installation & Setup
+## 7. 💻 Local Installation & Setup
 
 ```bash
 # 1. Navigate to project root
@@ -100,31 +119,33 @@ cp .env.example .env.local
 # 3. Run automated tests
 npm test
 
-# 4. Start development server (when dependencies are installed)
+# 4. Start development server
 npm run dev
 ```
 
 ---
 
-## 7. 🧪 Automated Test Suites
+## 8. 🧪 Automated Test Suites
 
 | Test Suite | Test Cases | Status | Description |
 | :--- | :---: | :---: | :--- |
+| **Purchase Workflow & Auto-Learn** | 3 | ✅ PASS | Atomic PO code generation, two-way calculations, Auto-Learn state machine price tracking |
+| **Reports Aggregation & Analytics** | 3 | ✅ PASS | KPI calculation using VN dateKeys, category percentage breakdown, top spending ranking |
+| **CSV Export & JSON Backup Merge** | 3 | ✅ PASS | UTF-8 BOM prefix, JSON backup schema, safe Merge / Upsert restoration |
 | **Financial Currency Utils** | 5 | ✅ PASS | VNĐ formatting, string parsing (150k, 1.5tr), line totals, reverse unit price, currency chips |
 | **Vietnam Timezone & Date** | 6 | ✅ PASS | Generates YYYY-MM-DD dateKey in Asia/Ho_Chi_Minh timezone, yesterday, this month, date ranges |
 | **Vietnamese Search Normalization** | 3 | ✅ PASS | Diacritic stripping, token-based unaccented matching, regex generator |
 | **Single-Owner Authentication** | 4 | ✅ PASS | Signs and verifies HMAC-SHA256 JWT, rejects tampered tokens, timing-safe password check |
 | **Secret-Zero Scanning Audit** | 1 | ✅ PASS | Scans entire repository, confirms 0 hardcoded credentials or passwords |
-| **TOTAL** | **19** | **100% PASS** | **Zero failures, ready for Phase 2** |
+| **TOTAL** | **28** | **100% PASS** | **28/28 tests PASS, zero defects, ready for Phase 3** |
 
 ---
 
-## 8. 🗺️ Project Roadmap & Acceptance Status
+## 9. 🗺️ Project Roadmap & Acceptance Status
 
 | Phase | Core Deliverables | 11-Stage Lifecycle Status |
 | :---: | :--- | :---: |
 | **Phase 1** | Next.js 15, Mongoose Singleton, 3 Schemas, Utils, Single-Owner Auth & Galaxy A35 Shell | ✅ **COMPLETED & 100% TEST PASS** |
-| **Phase 2** | API Route Handlers (`/purchases`, `/catalog`, `/reports`, `/export`), Auto-Learn Catalog & Integration Tests | ⏳ Ready for Implementation |
-| **Phase 3** | UI Design System Minimal SaaS 2026-2027, 4 Galaxy A35 Screens, Quick Entry Drawer | ⏳ Pending Phase 2 |
+| **Phase 2** | API Route Handlers (`/purchases`, `/catalog`, `/reports`, `/export`), Auto-Learn Catalog & Integration Tests | ✅ **COMPLETED & 100% TEST PASS** |
+| **Phase 3** | UI Design System Minimal SaaS 2026-2027, 4 Galaxy A35 Screens, Quick Entry Drawer | ⏳ Ready for Implementation |
 | **Phase 4** | E2E Regression, Secret Scanning Audit, Vercel Deployment & MongoDB Atlas Setup Guide | ⏳ Pending Phase 3 |
-

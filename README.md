@@ -21,18 +21,20 @@
 2. [Kiến Trúc Kỹ Thuật & Tối Ưu Serverless](#2-kiến-trúc-kỹ-thuật--tối-ưu-serverless)
 3. [Chuẩn Thiết Kế UI/UX & Samsung Galaxy A35 5G](#3-chuẩn-thiết-kế-uiux--samsung-galaxy-a35-5g)
 4. [Mô Hình Dữ Liệu Cốt Lõi (Mongoose Schemas)](#4-mô-hình-dữ-liệu-cốt-lõi-mongoose-schemas)
-5. [Cơ Chế Bảo Mật Single-Owner (Secret-Zero)](#5-cơ-chế-bảo-mật-single-owner-secret-zero)
-6. [Cài Đặt & Khởi Chạy Cục Bộ](#6-cài-đặt--khởi-chạy-cục-bộ)
-7. [Bộ Kiểm Thử Tự Động (Automated Test Suites)](#7-bộ-kiểm-thử-tự-động-automated-test-suites)
-8. [Lộ Trình Dự Án & Trạng Thái Nghiệm Thu](#8-lộ-trình-dự-án--trạng-thái-nghiệm-thu)
+5. [Hệ Thống API Endpoints & Nghiệp Vụ Phase 2](#5-hệ-thống-api-endpoints--nghiệp-vụ-phase-2)
+6. [Cơ Chế Bảo Mật Single-Owner (Secret-Zero)](#6-cơ-chế-bảo-mật-single-owner-secret-zero)
+7. [Cài Đặt & Khởi Chạy Cục Bộ](#7-cài-đặt--khởi-chạy-cục-bộ)
+8. [Bộ Kiểm Thử Tự Động (Automated Test Suites)](#8-bộ-kiểm-thử-tự-động-automated-test-suites)
+9. [Lộ Trình Dự Án & Trạng Thái Nghiệm Thu](#9-lộ-trình-dự-án--trạng-thái-nghiệm-thu)
 
 ---
 
 ## 1. 📖 Giới Thiệu & Mục Tiêu Dự Án
 
-**`daily-purchase-admin`** là ứng dụng Web Fullstack chuyên dụng, được thiết kế cho **một người dùng duy nhất (Single-Owner)** để ghi chép và theo dõi toàn bộ chi phí nhập/mua hàng hóa hằng ngày (đi chợ, siêu thị hoặc nhập hàng kinh doanh cá nhân):
+**`daily-purchase-admin`** là ứng dụng Web Fullstack chuyên dụng, được thiết kế cho **một người dùng duy nhất (Single-Owner)** để ghi chép và theo dõi toàn bộ chi phí nhập/mua hàng hóa hằng ngày (đặc biệt tối ưu hóa cho mua sắm nguyên liệu & vật tư quán cà phê, đồ ăn thức uống, đi chợ hằng ngày):
 - **Ghi chép tức thì tại thực địa**: Mở điện thoại Samsung Galaxy A35 5G ghi nhận ngay khi vừa thanh toán: mặt hàng, số lượng, đơn vị, đơn giá, thành tiền, nơi mua.
-- **Tự động học danh mục (`Auto-Learn Catalog`)**: Tự động ghi nhớ mặt hàng, đơn vị và đơn giá lần mua gần nhất để tự động gợi ý và điền sẵn ở các lần mua kế tiếp.
+- **Mã phiếu độc lập theo đợt**: Mỗi lần lưu phiếu tự động sinh mã nguyên tử `PO-YYYYMMDD-XXX` độc lập, rõ ràng theo từng lần đi mua.
+- **Tự động học danh mục (`Auto-Learn Catalog`)**: Tự động ghi nhớ mặt hàng, đơn vị và đơn giá lần mua gần nhất để tự động gợi ý và điền sẵn ở các lần mua kế tiếp (hỗ trợ danh mục mẫu sẵn có cho ngành cà phê).
 - **Tính toán tiền tệ 2 chiều**: Tự động tính Thành tiền từ Số lượng $\times$ Đơn giá, hoặc tự động chia ngược Đơn giá khi mua cân/mớ lẻ (Ví dụ: mua 1.5kg hết 85.000đ $\rightarrow$ tự ra đơn giá $56.667\text{ đ/kg}$).
 - **Miễn phí 100% Vercel + MongoDB Atlas (M0)**: Kiến trúc tối ưu hóa kết nối Serverless, không độ trễ Cold-Start, không tốn chi phí vận hành VPS.
 
@@ -75,7 +77,24 @@ Hệ thống được thiết kế theo phong cách **Minimal SaaS 2026–2027**
 
 ---
 
-## 5. 🔐 Cơ Chế Bảo Mật Single-Owner (Secret-Zero)
+## 5. 🌐 Hệ Thống API Endpoints & Nghiệp Vụ Phase 2
+
+| Nhóm API | Endpoint | Phương Thức | Chức Năng |
+| :--- | :--- | :---: | :--- |
+| **Phiếu Mua Hàng** | `/api/purchases` | `GET` | Lấy danh sách phiếu lọc theo ngày, khoảng ngày hoặc tìm kiếm không dấu |
+| | `/api/purchases` | `POST` | Tạo phiếu mua hàng mới, tự sinh mã `PO-YYYYMMDD-XXX`, auto-learn catalog |
+| | `/api/purchases/[id]` | `GET`, `PUT`, `DELETE` | Xem chi tiết, chỉnh sửa hoặc xóa phiếu mua hàng |
+| **Danh Mục Mặt Hàng**| `/api/catalog` | `GET` | Tìm kiếm gợi ý không dấu tức thì (`?q=...`) hoặc danh sách đầy đủ |
+| | `/api/catalog` | `POST` | Tạo mặt hàng thủ công vào danh mục |
+| | `/api/catalog/[id]` | `PUT`, `DELETE` | Cập nhật đơn giá, đơn vị tính hoặc xóa mặt hàng |
+| **Báo Cáo & Thống Kê**| `/api/reports` | `GET` | Tổng hợp KPI hôm nay/hôm qua/tháng này, biểu đồ ngày, tỷ trọng nhóm hàng, top món |
+| **Xuất & Sao Lưu** | `/api/export/csv` | `GET` | Xuất file CSV định dạng UTF-8 BOM chuẩn cho Microsoft Excel |
+| | `/api/export/backup` | `GET` | Tải về bản sao lưu toàn diện database định dạng JSON |
+| | `/api/export/backup` | `POST` | Khôi phục dữ liệu theo cơ chế **Hợp nhất (Merge / Upsert an toàn)** |
+
+---
+
+## 6. 🔐 Cơ Chế Bảo Mật Single-Owner (Secret-Zero)
 
 - **Không mở đăng ký công khai**: Chỉ một tài khoản Chủ sở hữu duy nhất.
 - **Secret-Zero Policy (Hard Lock #3)**: Không hardcode bất kỳ mật khẩu hoặc secret nào trong source code. Toàn bộ thông tin đăng nhập đọc từ biến môi trường:
@@ -87,7 +106,7 @@ Hệ thống được thiết kế theo phong cách **Minimal SaaS 2026–2027**
 
 ---
 
-## 6. 💻 Cài Đặt & Khởi Chạy Cục Bộ
+## 7. 💻 Cài Đặt & Khởi Chạy Cục Bộ
 
 ```bash
 # 1. Di chuyển vào thư mục dự án
@@ -97,34 +116,36 @@ cd d:\01_HOME\005_VIBE_AI\08_daily-purchase-admin
 cp .env.example .env.local
 # Mở .env.local và điền OWNER_PASSWORD, JWT_SECRET, MONGODB_URI của bạn
 
-# 3. Chạy kiểm thử tự động
+# 3. Chạy kiểm thử tự động toàn diện
 npm test
 
-# 4. Khởi chạy môi trường phát triển (khi đã cài dependencies)
+# 4. Khởi chạy môi trường phát triển
 npm run dev
 ```
 
 ---
 
-## 7. 🧪 Bộ Kiểm Thử Tự Động (Automated Test Suites)
+## 8. 🧪 Bộ Kiểm Thử Tự Động (Automated Test Suites)
 
 | Nhóm Kiểm Thử | Số Ca Test | Trạng Thái | Mô Tả |
 | :--- | :---: | :---: | :--- |
+| **Purchase Workflow & Auto-Learn** | 3 | ✅ PASS | Sinh mã PO nguyên tử, tính toán 2 chiều, máy trạng thái Auto-Learn cập nhật dải giá |
+| **Reports Aggregation & Analytics** | 3 | ✅ PASS | Tổng hợp KPI theo dateKey VN, tính tỷ trọng phần trăm nhóm hàng, xếp hạng Top chi tiêu |
+| **CSV Export & JSON Backup Merge** | 3 | ✅ PASS | Tiền tố UTF-8 BOM, cấu trúc file backup JSON, cơ chế Merge / Upsert an toàn |
 | **Financial Currency Utils** | 5 | ✅ PASS | Format VNĐ, parse chuỗi số (150k, 1.5tr), tính dòng hàng, tính ngược đơn giá, chip tiền tệ |
 | **Vietnam Timezone & Date** | 6 | ✅ PASS | Sinh dateKey YYYY-MM-DD theo múi giờ Asia/Ho_Chi_Minh, hôm qua, tháng này, dải ngày |
 | **Vietnamese Search Normalization** | 3 | ✅ PASS | Khử dấu tiếng Việt, tìm kiếm theo từ khóa token không dấu, sinh regex |
 | **Single-Owner Authentication** | 4 | ✅ PASS | Ký và xác minh JWT HMAC-SHA256, từ chối token giả mạo, kiểm tra timing-safe password |
 | **Secret-Zero Scanning Audit** | 1 | ✅ PASS | Quét toàn bộ repository, phát hiện 0 chuỗi mật khẩu/secret hardcode |
-| **TỔNG CỘNG** | **19** | **100% PASS** | **Sạch lỗi 100%, sẵn sàng cho Phase 2** |
+| **TỔNG CỘNG** | **28** | **100% PASS** | **28/28 tests PASS, sạch lỗi 100%, sẵn sàng cho Phase 3** |
 
 ---
 
-## 8. 🗺️ Lộ Trình Dự Án & Trạng Thái Nghiệm Thu
+## 9. 🗺️ Lộ Trình Dự Án & Trạng Thái Nghiệm Thu
 
 | Phase | Nội Dung Trọng Tâm | Trạng Thái Vòng Đời 11 Bước |
 | :---: | :--- | :---: |
 | **Phase 1** | Khởi tạo Next.js 15, Mongoose Singleton, 3 Schemas, Utils, Auth Single-Owner & Galaxy A35 Shell | ✅ **ĐÃ HOÀN TẤT & ĐẠT 100% TEST PASS** |
-| **Phase 2** | API Route Handlers (`/purchases`, `/catalog`, `/reports`, `/export`), Auto-Learn Catalog & Integration Tests | ⏳ Sẵn sàng triển khai |
-| **Phase 3** | UI Design System Minimal SaaS 2026-2027, 4 Màn hình chính Galaxy A35 5G & Desktop, Quick Entry Drawer | ⏳ Chờ Phase 2 |
+| **Phase 2** | API Route Handlers (`/purchases`, `/catalog`, `/reports`, `/export`), Auto-Learn Catalog & Integration Tests | ✅ **ĐÃ HOÀN TẤT & ĐẠT 100% TEST PASS** |
+| **Phase 3** | UI Design System Minimal SaaS 2026-2027, 4 Màn hình chính Galaxy A35 5G & Desktop, Quick Entry Drawer | ⏳ Sẵn sàng triển khai |
 | **Phase 4** | E2E Regression, Secret Scanning Audit, Cấu hình Vercel Deploy & Hướng dẫn MongoDB Atlas | ⏳ Chờ Phase 3 |
-

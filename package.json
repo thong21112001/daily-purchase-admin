@@ -10,8 +10,9 @@
     "start": "next start",
     "lint": "next lint",
     "test:unit": "node --test tests/unit/*.test.mjs",
+    "test:integration": "node --test tests/integration/*.test.mjs",
     "test:secret-scan": "node tests/audit/secret-scanning.mjs",
-    "test": "npm run test:unit && npm run test:secret-scan"
+    "test": "npm run test:unit && npm run test:integration && npm run test:secret-scan"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
