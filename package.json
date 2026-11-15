@@ -13,7 +13,8 @@
     "test:integration": "node --test tests/integration/*.test.mjs",
     "test:audit": "node --test tests/audit/*.test.mjs && node tests/audit/secret-scanning.mjs",
     "test:secret-scan": "node tests/audit/secret-scanning.mjs",
-    "test": "npm run test:unit && npm run test:integration && npm run test:audit"
+    "test:e2e": "node --test tests/e2e/*.test.mjs",
+    "test": "npm run test:unit && npm run test:integration && npm run test:audit && npm run test:e2e"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

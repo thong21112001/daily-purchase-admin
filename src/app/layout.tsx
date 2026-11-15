@@ -6,9 +6,13 @@ export const metadata: Metadata = {
   title: "Sổ Quản Trị Nhập Hàng Cá Nhân | Daily Purchase Admin",
   description: "Hệ thống quản trị theo dõi chi phí mua sắm và nhập hàng hóa hằng ngày tối giản, bảo mật",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "Sổ Nhập Hàng",
   },
 };
