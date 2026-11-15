@@ -1,4 +1,15 @@
 import mongoose from "mongoose";
+import dns from "node:dns";
+
+// Tự động dùng Google DNS / Cloudflare DNS khi chạy ở Local Windows
+// Khắc phục triệt để lỗi DNS router ISP (Viettel/VNPT/FPT) từ chối phân giải MongoDB SRV record (querySrv ECONNREFUSED)
+if (process.env.NODE_ENV !== "production") {
+  try {
+    dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+  } catch {
+    // Bỏ qua nếu môi trường không hỗ trợ tùy chỉnh DNS
+  }
+}
 
 /**
  * SINGLETON MONGOOSE CONNECTION CACHING CHO VERCEL SERVERLESS
