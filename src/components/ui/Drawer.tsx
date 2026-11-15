@@ -36,22 +36,22 @@ export function Drawer({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center sm:p-4 md:p-6">
       {/* Backdrop mờ nhẹ */}
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in"
         onClick={onClose}
       />
 
-      {/* Sheet Container trượt từ dưới lên */}
+      {/* Sheet / Dialog Container (Tối ưu hoàn hảo cả Mobile lẫn Laptop/Desktop) */}
       <div
         className={cn(
-          "relative z-50 w-full max-w-lg mx-auto bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 rounded-t-2xl shadow-xl flex flex-col max-h-[92vh] pb-safe animate-in slide-in-from-bottom duration-200",
+          "relative z-50 w-full max-w-lg md:max-w-3xl lg:max-w-4xl mx-auto bg-white dark:bg-zinc-900 border-t sm:border border-zinc-200 dark:border-zinc-800 rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[88vh] pb-safe animate-in slide-in-from-bottom sm:zoom-in-95 duration-200",
           className
         )}
       >
-        {/* Swipe Handle Bar */}
-        <div className="flex justify-center pt-3 pb-1" onClick={onClose}>
+        {/* Swipe Handle Bar (Chỉ hiện trên Mobile) */}
+        <div className="flex justify-center pt-3 pb-1 sm:hidden" onClick={onClose}>
           <div className="w-10 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700 cursor-pointer" />
         </div>
 

@@ -40,3 +40,30 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 16px);
 }
 
+/* Ẩn hoàn toàn scrollbar trên các dãy chip chọn nhanh (vẫn vuốt và cuộn mượt mà) */
+.scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none,
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Tùy chỉnh thanh cuộn tối giản, mỏng, thanh lịch (Minimal SaaS 2026-2027) thay thế scrollbar thô của Windows */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(161, 161, 170, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(161, 161, 170, 0.45);
+}
+

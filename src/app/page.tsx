@@ -75,7 +75,10 @@ function DashboardContent() {
       const reportsJson = await reportsRes.json();
 
       if (purchasesJson.success) {
-        setPurchases(purchasesJson.data.purchases || []);
+        const list = Array.isArray(purchasesJson.data)
+          ? purchasesJson.data
+          : purchasesJson.data?.purchases || [];
+        setPurchases(list);
       }
       if (reportsJson.success && reportsJson.data.kpis) {
         setKpis(reportsJson.data.kpis);

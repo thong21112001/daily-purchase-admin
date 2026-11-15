@@ -152,3 +152,59 @@ export function getDateRange(
   }
 }
 
+export interface PastDayOption {
+  dateKey: string;
+  label: string;
+  shortLabel: string;
+  isToday: boolean;
+  isYesterday: boolean;
+  dayOfWeek: string;
+  isoDate: string;
+}
+
+/**
+ * Tạo danh sách các ngày trong vòng 7 ngày qua (để ghi lùi ngày)
+ */
+export function getPastDaysOptions(days = 8): PastDayOption[] {
+  const options: PastDayOption[] = [];
+  const daysOfWeek = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+  const now = new Date();
+
+  for (let i = 0; i < days; i++) {
+    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const dateKey = getDateKey(d);
+    const { year, month, day } = getVNParts(d);
+    const dd = String(day).padStart(2, "0");
+    const mm = String(month).padStart(2, "0");
+
+    const vnDateObj = new Date(d.toLocaleString("en-US", { timeZone: VIETNAM_TIMEZONE }));
+    const dow = daysOfWeek[vnDateObj.getDay()];
+
+    let label = `${dow}, ${dd}/${mm}`;
+    let shortLabel = `${dow}, ${dd}/${mm}`;
+
+    if (i === 0) {
+      label = `Hôm nay (${dd}/${mm})`;
+      shortLabel = `Hôm nay`;
+    } else if (i === 1) {
+      label = `Hôm qua (${dd}/${mm})`;
+      shortLabel = `Hôm qua`;
+    }
+
+    const isoDate = `${year}-${mm}-${dd}T12:00:00+07:00`;
+
+    options.push({
+      dateKey,
+      label,
+      shortLabel,
+      isToday: i === 0,
+      isYesterday: i === 1,
+      dayOfWeek: dow,
+      isoDate,
+    });
+  }
+
+  return options;
+}
+
+

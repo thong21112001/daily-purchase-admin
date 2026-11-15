@@ -91,7 +91,10 @@ function HistoryContent() {
       const res = await fetch(`/api/purchases?${params.toString()}`);
       const json = await res.json();
       if (json.success) {
-        setPurchases(json.data.purchases || []);
+        const list = Array.isArray(json.data)
+          ? json.data
+          : json.data?.purchases || [];
+        setPurchases(list);
       }
     } catch {
       showToast("Không thể tải sổ theo ngày. Vui lòng thử lại", "error");

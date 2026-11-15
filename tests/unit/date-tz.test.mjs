@@ -9,6 +9,7 @@ import {
   formatDateVN,
   formatDateTimeVN,
   getDateRange,
+  getPastDaysOptions,
 } from "../../src/lib/utils/date.ts";
 
 describe("Vietnam Timezone & Date Utilities Tests", () => {
@@ -48,6 +49,17 @@ describe("Vietnam Timezone & Date Utilities Tests", () => {
 
     const weekRange = getDateRange("7days");
     assert.ok(weekRange.startDateKey <= weekRange.endDateKey);
+  });
+
+  test("getPastDaysOptions returns 8 days with Today, Yesterday and valid ISO dates", () => {
+    const days = getPastDaysOptions(8);
+    assert.equal(days.length, 8);
+    assert.ok(days[0].isToday);
+    assert.ok(days[0].label.includes("Hôm nay"));
+    assert.ok(days[1].isYesterday);
+    assert.ok(days[1].label.includes("Hôm qua"));
+    assert.match(days[0].dateKey, /^\d{4}-\d{2}-\d{2}$/);
+    assert.match(days[0].isoDate, /^\d{4}-\d{2}-\d{2}T12:00:00\+07:00$/);
   });
 });
 

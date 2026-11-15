@@ -7,8 +7,13 @@ export const metadata: Metadata = {
   description: "Hệ thống quản trị theo dõi chi phí mua sắm và nhập hàng hóa hằng ngày tối giản, bảo mật",
   manifest: "/manifest.json",
   icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
+    ],
+    shortcut: "/icon.svg",
+    apple: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
   },
   appleWebApp: {
     capable: true,
@@ -33,6 +38,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
+      <head>
+        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+      </head>
       <body className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 antialiased font-sans">
         <ToastProvider>{children}</ToastProvider>
       </body>

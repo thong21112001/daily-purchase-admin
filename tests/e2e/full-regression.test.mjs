@@ -304,11 +304,9 @@ describe("Phase 4: Comprehensive E2E Full Regression & Quality Audit", () => {
       assert.ok(manifest.icons.length > 0);
     });
 
-    test("9.3. public/icon.svg and src/app/icon.svg exist for PWA icon resolution", () => {
+    test("9.3. public/icon.svg exists for PWA icon and browser favicon resolution without route conflict", () => {
       const publicIcon = path.resolve(process.cwd(), "public", "icon.svg");
-      const appIcon = path.resolve(process.cwd(), "src", "app", "icon.svg");
       assert.ok(fs.existsSync(publicIcon), "public/icon.svg phải tồn tại");
-      assert.ok(fs.existsSync(appIcon), "src/app/icon.svg phải tồn tại");
     });
   });
 
