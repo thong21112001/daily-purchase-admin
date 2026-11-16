@@ -113,9 +113,9 @@ export function CatalogItemPickerModal({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Tìm theo tên mặt hàng (không cần gõ dấu)..."
-            className="w-full min-h-[44px] h-11 px-3.5 pr-10 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-base focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
+            className="w-full min-h-[44px] h-11 px-3.5 pr-10 rounded-xl border border-[#D8EFE9] bg-[#F4FBF9] text-slate-900 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 shadow-xs"
           />
-          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none">
+          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
             <Search className="w-4 h-4" />
           </div>
         </div>
@@ -127,10 +127,10 @@ export function CatalogItemPickerModal({
               key={cat}
               type="button"
               onClick={() => setSelectedCategory(cat)}
-              className={`min-h-[44px] px-3 rounded-xl text-xs font-medium shrink-0 transition-all cursor-pointer ${
+              className={`min-h-[44px] px-3 rounded-xl text-xs font-semibold shrink-0 transition-all cursor-pointer ${
                 selectedCategory === cat
-                  ? "bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 font-bold shadow-xs"
-                  : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                  ? "bg-emerald-600 text-white font-bold shadow-sm shadow-emerald-600/25"
+                  : "bg-white border border-[#D8EFE9] text-slate-700 hover:bg-emerald-50 hover:border-emerald-300"
               }`}
             >
               {cat}
@@ -139,13 +139,13 @@ export function CatalogItemPickerModal({
         </div>
 
         {/* Danh sách mặt hàng (Grid 2 cột trên Laptop/Desktop rộng rãi) */}
-        <div className="max-h-[52vh] overflow-y-auto divide-y sm:divide-y-0 sm:grid sm:grid-cols-2 sm:gap-2 p-1 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 overscroll-contain">
+        <div className="max-h-[52vh] overflow-y-auto divide-y sm:divide-y-0 sm:grid sm:grid-cols-2 sm:gap-2 p-1 border border-[#D8EFE9] rounded-2xl bg-white overscroll-contain">
           {loading ? (
-            <div className="p-8 text-center text-sm text-zinc-400 sm:col-span-2">
+            <div className="p-8 text-center text-sm text-slate-400 sm:col-span-2">
               Đang tải danh mục mặt hàng...
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="p-8 text-center text-sm text-zinc-400 sm:col-span-2">
+            <div className="p-8 text-center text-sm text-slate-400 sm:col-span-2">
               Không tìm thấy mặt hàng nào phù hợp
             </div>
           ) : (
@@ -155,10 +155,10 @@ export function CatalogItemPickerModal({
                 <div
                   key={item._id}
                   onClick={() => toggleSelect(item._id)}
-                  className={`min-h-[52px] p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-colors active:bg-zinc-100 dark:active:bg-zinc-800 select-none ${
+                  className={`min-h-[52px] p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-colors active:bg-emerald-100 select-none ${
                     isChecked
-                      ? "bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800/80 shadow-2xs"
-                      : "border-transparent sm:border-zinc-100 sm:dark:border-zinc-800/60 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                      ? "bg-emerald-50 border-emerald-300 shadow-2xs"
+                      : "border-transparent sm:border-slate-100 hover:bg-[#F4FBF9]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -166,26 +166,26 @@ export function CatalogItemPickerModal({
                       className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
                         isChecked
                           ? "bg-emerald-600 border-emerald-600 text-white"
-                          : "border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800"
+                          : "border-slate-300 bg-white"
                       }`}
                     >
                       {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                     </div>
                     <div>
-                      <span className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100 leading-snug">
+                      <span className="block text-sm font-semibold text-slate-900 leading-snug">
                         {item.name}
                       </span>
-                      <span className="block text-xs text-zinc-400">
+                      <span className="block text-xs text-slate-500">
                         {item.category} • {item.defaultUnit}
                       </span>
                     </div>
                   </div>
 
                   <div className="text-right shrink-0">
-                    <span className="block text-sm font-mono font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+                    <span className="block text-sm font-mono font-bold tabular-nums text-emerald-700">
                       {formatVND(item.lastUnitPrice)}
                     </span>
-                    <span className="block text-[10px] text-zinc-400">Giá gần nhất</span>
+                    <span className="block text-[10px] text-slate-400">Giá gần nhất</span>
                   </div>
                 </div>
               );
@@ -194,9 +194,9 @@ export function CatalogItemPickerModal({
         </div>
 
         {/* Nút hành động */}
-        <div className="flex items-center justify-between pt-2 border-t border-zinc-200 dark:border-zinc-800">
-          <span className="text-xs font-medium text-zinc-500">
-            Đã chọn: <strong className="text-zinc-900 dark:text-zinc-100 font-mono text-sm">{selectedCount}</strong> mặt hàng
+        <div className="flex items-center justify-between pt-2 border-t border-[#D8EFE9]">
+          <span className="text-xs font-medium text-slate-600">
+            Đã chọn: <strong className="text-emerald-700 font-mono text-sm">{selectedCount}</strong> mặt hàng
           </span>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={onClose}>
@@ -205,7 +205,8 @@ export function CatalogItemPickerModal({
             <Button
               onClick={handleConfirm}
               disabled={selectedCount === 0}
-              className="font-bold flex items-center gap-1.5"
+              variant="peach"
+              className="font-bold flex items-center gap-1.5 shadow-md shadow-orange-500/25"
             >
               <Plus className="w-4 h-4" />
               <span>Thêm vào hóa đơn ({selectedCount})</span>

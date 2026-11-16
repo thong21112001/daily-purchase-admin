@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { ExportService } from "@/services/export.service";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const backup = await ExportService.generateBackupJSON();

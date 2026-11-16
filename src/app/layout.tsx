@@ -28,7 +28,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#18181b",
+  themeColor: "#10B981",
 };
 
 export default function RootLayout({
@@ -41,7 +41,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" type="image/svg+xml" href="/icon.svg" />
       </head>
-      <body className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 antialiased font-sans">
+      <body className="min-h-screen bg-[#F4FBF9] text-slate-900 antialiased font-sans">
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>

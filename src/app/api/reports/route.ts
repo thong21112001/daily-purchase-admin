@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { ReportService } from "@/services/report.service";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -10,10 +12,10 @@ export async function GET(request: Request) {
     const endDateKey = searchParams.get("endDateKey") || undefined;
 
     const [kpis, dailySpending, categoryBreakdown, topItems] = await Promise.all([
-      ReportService.getDashboardKPIs(),
+      ReportService.getDashboardKPIs(monthKey),
       ReportService.getDailySpending(monthKey),
-      ReportService.getCategoryBreakdown(startDateKey, endDateKey),
-      ReportService.getTopSpendingItems(startDateKey, endDateKey, 10),
+      ReportService.getCategoryBreakdown(startDateKey, endDateKey, monthKey),
+      ReportService.getTopSpendingItems(startDateKey, endDateKey, 10, monthKey),
     ]);
 
     return NextResponse.json({

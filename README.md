@@ -10,7 +10,7 @@
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel%20sin1%20Singapore-black?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 [![PWA](https://img.shields.io/badge/PWA-Standalone%20A35-purple?style=for-the-badge&logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
 
-**Hệ thống Quản trị Theo dõi Chi phí Mua sắm & Nhập Hàng Hóa Cá nhân Siêu Tốc Chuẩn Minimal SaaS 2026–2027**  
+**Hệ thống Quản trị Theo dõi Chi phí Mua sắm & Nhập Hàng Hóa Cá nhân Siêu Tốc Chuẩn Fresh & Free SaaS 2026–2027**  
 *Tài liệu Tiếng Anh: [English README (README_en.md)](README_en.md)*
 
 </div>
@@ -20,16 +20,17 @@
 ## 📋 Mục Lục
 1. [Giới Thiệu & Mục Tiêu Dự Án](#1-giới-thiệu--mục-tiêu-dự-án)
 2. [Kiến Trúc Kỹ Thuật & Tối Ưu Serverless](#2-kiến-trúc-kỹ-thuật--tối-ưu-serverless)
-3. [Chuẩn Thiết Kế UI/UX & Samsung Galaxy A35 5G PWA](#3-chuẩn-thiết-kế-uiux--samsung-galaxy-a35-5g-pwa)
+3. [Chuẩn Thiết Kế UI/UX "Fresh & Free" & Samsung Galaxy A35 5G PWA](#3-chuẩn-thiết-kế-uiux-fresh--free--samsung-galaxy-a35-5g-pwa)
 4. [Mô Hình Dữ Liệu Cốt Lõi (Mongoose Schemas)](#4-mô-hình-dữ-liệu-cốt-lõi-mongoose-schemas)
 5. [Hệ Thống API Endpoints & Nghiệp Vụ](#5-hệ-thống-api-endpoints--nghiệp-vụ)
 6. [Hệ Thống Giao Diện & Trải Nghiệm Nhập Hàng](#6-hệ-thống-giao-diện--trải-nghiệm-nhập-hàng)
-7. [Cơ Chế Bảo Mật Single-Owner (Secret-Zero)](#7-cơ-chế-bảo-mật-single-owner-secret-zero)
-8. [Hướng Dẫn Thiết Lập MongoDB Atlas M0 Miễn Phí](#8-hướng-dẫn-thiết-lập-mongodb-atlas-m0-miễn-phí)
-9. [Hướng Dẫn Triển Khai Lên Vercel (Singapore `sin1`)](#9-hướng-dẫn-triển-khai-lên-vercel-singapore-sin1)
-10. [Cài Đặt PWA Trên Điện Thoại Samsung Galaxy A35 5G](#10-cài-đặt-pwa-trên-điện-thoại-samsung-galaxy-a35-5g)
-11. [Khởi Chạy Local & Kiểm Thử Tự Động Toàn Diện](#11-khởi-chạy-local--kiểm-thử-tự-động-toàn-diện)
-12. [Lộ Trình Dự Án & Trạng Thái Nghiệm Thu 11 Bước](#12-lộ-trình-dự-án--trạng-thái-nghiệm-thu-11-bước)
+7. [Tích Hợp MB Bank Tracker & VietQR Tại Quầy](#7-tích-hợp-mb-bank-tracker--vietqr-tại-quầy)
+8. [Cơ Chế Bảo Mật Single-Owner (Secret-Zero)](#8-cơ-chế-bảo-mật-single-owner-secret-zero)
+9. [Hướng Dẫn Thiết Lập MongoDB Atlas M0 Miễn Phí](#9-hướng-dẫn-thiết-lập-mongodb-atlas-m0-miễn-phí)
+10. [Hướng Dẫn Triển Khai Lên Vercel (Singapore `sin1`)](#10-hướng-dẫn-triển-khai-lên-vercel-singapore-sin1)
+11. [Cài Đặt PWA Trên Điện Thoại Samsung Galaxy A35 5G](#11-cài-đặt-pwa-trên-điện-thoại-samsung-galaxy-a35-5g)
+12. [Khởi Chạy Local & Kiểm Thử Tự Động Toàn Diện](#12-khởi-chạy-local--kiểm-thử-tự-động-toàn-diện)
+13. [Lộ Trình Dự Án & Trạng Thái Nghiệm Thu 11 Bước](#13-lộ-trình-dự-án--trạng-thái-nghiệm-thu-11-bước)
 
 ---
 
@@ -38,8 +39,10 @@
 **`daily-purchase-admin`** là ứng dụng Web Fullstack chuyên dụng, được thiết kế cho **một người dùng duy nhất (Single-Owner)** để ghi chép và theo dõi toàn bộ chi phí nhập/mua hàng hóa hằng ngày (đặc biệt tối ưu hóa cho mua sắm nguyên liệu & vật tư quán cà phê, đồ ăn thức uống, đi chợ hằng ngày):
 - **Ghi chép tức thì tại thực địa**: Mở điện thoại Samsung Galaxy A35 5G ghi nhận ngay khi vừa thanh toán: mặt hàng, số lượng, đơn vị, đơn giá, thành tiền, nơi mua.
 - **Mã phiếu độc lập theo đợt**: Mỗi lần lưu phiếu tự động sinh mã nguyên tử `PO-YYYYMMDD-XXX` độc lập, rõ ràng theo từng lần đi mua.
-- **Tự động học danh mục (`Auto-Learn Catalog`)**: Tự động ghi nhớ mặt hàng, đơn vị và đơn giá lần mua gần nhất để tự động gợi ý và điền sẵn ở các lần mua kế tiếp (nạp sẵn bộ danh mục F&B quán cà phê).
+- **Tự động học Nơi mua & Danh mục (`Auto-Learn`)**: Tự động lưu và cập nhật tần suất sử dụng của Nhà cung cấp/Nơi mua (`Supplier`) và Mặt hàng (`CatalogItem`), hỗ trợ tự nhập đơn vị đo mới tùy ý.
 - **Tính toán tiền tệ 2 chiều**: Tự động tính Thành tiền từ Số lượng $\times$ Đơn giá, hoặc tự động chia ngược Đơn giá khi mua cân/mớ lẻ (Ví dụ: mua 1.5kg hết 85.000đ $\rightarrow$ tự ra đơn giá $56.667\text{ đ/kg}$).
+- **MB Bank Tracker & VietQR**: Bắt biến động số dư tự động qua Webhook bảo mật, cập nhật tức thì mỗi 10 giây, hỗ trợ hiển thị mã VietQR thanh toán nhanh tại quầy.
+- **Xuất Excel `.xlsx` chuẩn xác**: Tự động tính độ rộng cột (`wch`) vừa vặn, không bị `###` hay mất chữ, kèm dòng **TỔNG CỘNG** ở cuối.
 - **Miễn phí 100% Vercel + MongoDB Atlas (M0)**: Kiến trúc tối ưu hóa kết nối Serverless, không độ trễ Cold-Start, không tốn chi phí vận hành VPS.
 
 ---
@@ -52,22 +55,28 @@
 | **Framework** | Next.js 15 (App Router) | Fullstack React 19, Server Actions & API Route Handlers |
 | **Database** | MongoDB Atlas (M0 Free) | Mongoose 8 với Singleton Connection Caching (`global.mongooseCache`) |
 | **Hosting** | Vercel Serverless (sin1) | Định tuyến vùng Singapore, độ trễ cực thấp 20–40ms về Việt Nam |
-| **Styling** | Tailwind CSS v3.4 | Hệ màu Zinc/Slate trung tính, hệ lưới 4px/8px, viền 1px solid |
-| **Bảo Mật** | Web Crypto & Native JWT | Cookie HttpOnly 90 ngày, so khớp mật khẩu Timing-Safe |
+| **Styling** | Tailwind CSS v3.4 | Hệ màu **Fresh & Free** (Xanh Mint, Cam Đào, Xanh Trời), viền `#D8EFE9` |
+| **Bảo Mật** | Web Crypto & Native JWT | Cookie HttpOnly 90 ngày, so khớp mật khẩu Timing-Safe, Webhook Secret |
 | **Biểu Tượng** | Lucide React | Bộ icon nghiệp vụ tối giản, triệt tiêu 100% icon AI màu mè |
+| **Bảng Tính** | SheetJS (`xlsx`) | Xuất file Excel `.xlsx` thật với tự động căn độ rộng cột |
 | **Thời Gian** | Múi giờ `Asia/Ho_Chi_Minh` | Chuẩn hóa `dateKey` theo giờ Việt Nam (UTC+7), chống lệch ngày khi mua đêm muộn |
 
 ---
 
-## 3. 📱 Chuẩn Thiết Kế UI/UX & Samsung Galaxy A35 5G PWA
+## 3. 🎨 Chuẩn Thiết Kế UI/UX "Fresh & Free" & Samsung Galaxy A35 5G PWA
 
-Hệ thống được thiết kế theo phong cách **Minimal SaaS 2026–2027** và chuẩn hóa Pixel-Perfect cho màn hình tham chiếu **Samsung Galaxy A35 5G**:
-- **Không gian hiển thị**: Màn hình 6.6", tỷ lệ 19.5:9, CSS Viewport `360px – 412px`.
+Hệ thống được thiết kế theo phong cách **Fresh & Free (Tươi Sáng, Tự Do, Rõ Nét)** và tối ưu hóa Pixel-Perfect cho màn hình tham chiếu **Samsung Galaxy A35 5G** cũng như Laptop/Desktop:
+- **Bảng màu chủ đạo**:
+  - `bg-app`: `#F4FBF9` (Trắng ngọc bích cực dịu mắt).
+  - `bg-surface`: `#FFFFFF` viền `1px solid #D8EFE9`, bóng đổ nhẹ `shadow-[0_4px_20px_-4px_rgba(16,185,129,0.08)]`.
+  - **Xanh Mint (`mint`)**: `#10B981` (Primary) — Màu chủ đạo thương hiệu, thể hiện sự tươi mới, thịnh vượng.
+  - **Cam Đào (`peach`)**: `#FB923C` / `#F97316` (Accent) — Dùng cho CTA "+ Ghi hàng", tổng tiền, điểm nhấn thao tác.
+  - **Xanh Trời (`sky`)**: `#0EA5E9` (Secondary) — Dùng cho bộ lọc, tag Nơi mua, thông tin thẻ MB Bank.
+- **Không gian hiển thị Mobile**: Màn hình 6.6", tỷ lệ 19.5:9, CSS Viewport `360px – 412px`.
 - **Chống Auto-Zoom trên Mobile**: Mọi thẻ `<input>`, `<select>`, `<textarea>` bắt buộc $\ge 16\text{px}$ (`text-base`).
-- **Hitbox tối thiểu 44px**: Vùng chạm phím, nút bấm, tab điều hướng đáy tối thiểu $44\text{px} \times 44\text{px}$ (`min-h-[44px]`, `h-11`, `h-12`).
+- **Hitbox tối thiểu 44px**: Vùng chạm phím, nút bấm, tab điều hướng đáy tối thiểu $44\text{px} \times 44\text{px}$ (`min-h-[44px]`).
 - **Căn thẳng hàng tiền tệ**: Dùng `tabular-nums font-mono` cho tất cả các số lượng, đơn giá, thành tiền VNĐ.
-- **Không tràn ngang**: Layout bảo đảm `overflow-x: hidden` trên toàn bộ khung nhìn.
-- **Triệt tiêu AI Icons**: Tuyệt đối không dùng sparkles, wand, robot hoặc hiệu ứng gradient neon lòe loẹt.
+- **Không tràn ngang & Zero Clipping**: Layout bảo đảm `overflow-x: hidden`, tách riêng fixed Header và Segmented Control để không bao giờ bị cắt chữ.
 - **PWA Standalone Mode**: Web App Manifest với icon SVG vector độ nét cao, chạy toàn màn hình không thanh URL.
 
 ---
@@ -75,147 +84,124 @@ Hệ thống được thiết kế theo phong cách **Minimal SaaS 2026–2027**
 ## 4. 🗄️ Mô Hình Dữ Liệu Cốt Lõi (Mongoose Schemas)
 
 1. **`Counter` (`counter.model.ts`)**: Quản lý bộ đếm nguyên tử `seq` tăng dần theo ngày để sinh mã phiếu `PO-YYYYMMDD-XXX`.
-2. **`CatalogItem` (`catalog-item.model.ts`)**: Lưu danh mục mặt hàng tự động học:
+2. **`Supplier` (`supplier.model.ts`)**: Lưu danh mục Nơi mua / Nhà cung cấp tự động học:
+   - `name`, `normalizedName` (unique indexed), `category` (Chợ, Siêu thị, Đại lý, v.v.), `note`, `usageCount`, `lastUsedAt`.
+3. **`CatalogItem` (`catalog-item.model.ts`)**: Lưu danh mục mặt hàng tự động học:
    - `name`, `normalizedName` (indexed), `category`, `defaultUnit`, `lastUnitPrice`, `minUnitPrice`, `maxUnitPrice`, `usageCount`.
-3. **`PurchaseLog` (`purchase-log.model.ts`)**: Lưu phiếu nhập hàng:
+4. **`PurchaseLog` (`purchase-log.model.ts`)**: Lưu phiếu nhập hàng:
    - `code` (unique), `purchaseDate`, `dateKey` (`YYYY-MM-DD` giờ VN), `supplier`, `paymentMethod` (`CASH` | `TRANSFER`), `items` (`name`, `category`, `unit`, `quantity`, `unitPrice`, `lineTotal`, `note`), `totalAmount`, `itemCount`, `note`.
+5. **`BankTransaction` (`bank-transaction.model.ts`)**: Lưu biến động số dư MB Bank:
+   - `transactionRef` (unique indexed), `bankName`, `accountNumber`, `type` (`IN` | `OUT`), `amount`, `balanceAfter`, `senderName`, `content`, `transactionDate`, `dateKey`, `rawNotification`, `source`.
 
 ---
 
 ## 5. 🔌 Hệ Thống API Endpoints & Nghiệp Vụ
 
-- `POST /api/purchases`: Tạo đợt nhập hàng mới (sinh mã nguyên tử `PO-YYYYMMDD-XXX`, cập nhật tự động học Catalog).
+- `POST /api/purchases`: Tạo đợt nhập hàng mới (sinh mã nguyên tử `PO-YYYYMMDD-XXX`, tự động học Catalog & Nơi mua).
 - `GET /api/purchases`: Tra cứu lịch sử theo ngày, khoảng ngày hoặc từ khóa không dấu.
 - `GET /api/purchases/[id]` & `PUT`, `DELETE`: Xem, sửa và xóa phiếu.
-- `GET /api/catalog`: Tìm kiếm gợi ý tức thì (`?q=...`) hoặc danh sách phân trang (`?category=...&page=...`).
+- `GET /api/suppliers`: Danh sách nơi mua, gợi ý autocomplete tức thì theo từ khóa không dấu (`/api/suppliers?query=...`).
+- `POST /api/suppliers` & `PUT`, `DELETE`: Quản lý nơi mua thủ công hoặc tự động.
+- `GET /api/catalog`: Tìm kiếm gợi ý tức thì (`?q=...`), lấy danh sách đơn vị đo tùy chỉnh (`?units=true`).
 - `GET /api/catalog?seed=true`: Nạp nhanh 17 mặt hàng mẫu ngành F&B / Quán Cà phê.
-- `POST /api/catalog` & `PUT`, `DELETE`: Thao tác CRUD danh mục.
-- `GET /api/reports`: Báo cáo KPI, biểu đồ chi tiêu ngày, cơ cấu nhóm hàng và Top 10 chi phí lớn nhất.
-- `GET /api/export/csv`: Xuất bảng tính Excel với UTF-8 BOM (`\uFEFF`) không lỗi font tiếng Việt.
-- `GET /api/export/backup`: Tải file JSON sao lưu toàn bộ dữ liệu.
+- `POST /api/catalog` & `PUT`, `DELETE`: Thao tác CRUD danh mục mặt hàng.
+- `GET /api/reports`: Báo cáo KPI, lọc theo tháng `YYYY-MM` an toàn tuyệt đối lệch múi giờ, biểu đồ chi tiêu ngày, cơ cấu nhóm hàng và Top chi tiêu.
+- `GET /api/export/excel`: Xuất file Excel `.xlsx` tự động căn độ rộng cột (`wch`) vừa vặn, kèm dòng TỔNG CỘNG.
+- `GET /api/export/csv`: Xuất bảng tính CSV với UTF-8 BOM (`\uFEFF`).
+- `GET /api/export/backup`: Tải file JSON sao lưu toàn bộ dữ liệu (kèm danh sách Nơi mua).
 - `POST /api/export/backup`: Khôi phục dữ liệu theo cơ chế Merge/Upsert an toàn (Choice A).
+- `POST /api/webhooks/mbbank`: Webhook tiếp nhận biến động số dư từ Android Notification Forwarder hoặc SePay (bảo vệ bằng `MBBANK_WEBHOOK_SECRET`).
+- `GET /api/mbbank`: Lấy danh sách biến động số dư, thống kê Dashboard tiền vào hôm nay/tháng này (`?stats=true`).
+- `POST /api/mbbank`: Gửi thử nghiệm giả lập biến động số dư tức thì.
+- `DELETE /api/mbbank/[id]`: Xóa bản ghi biến động số dư.
 
 ---
 
-## 6. 🎨 Hệ Thống Giao Diện & Trải Nghiệm Nhập Hàng
+## 6. 📱 Hệ Thống Giao Diện & Trải Nghiệm Nhập Hàng
 
-### 6.1. Khung Điều Hướng Thích Ứng (Adaptive Layout Shell)
-- **Desktop ($\ge 1024\text{px}$)**: `DesktopSidebar` cố định bên trái (`w-64`) với menu 4 mục và nút "+ Ghi hàng" nổi bật.
-- **Galaxy A35 5G Mobile ($< 1024\text{px}$)**:
-  - `MobileTopHeader`: Header mỏng hiển thị ngày hiện tại, tổng tiền hôm nay và nút làm mới nhanh.
-  - `MobileBottomNav`: Thanh đáy cố định (`h-16`, `pb-safe`) với 4 tab và **nút tròn trung tâm `+ Ghi hàng`** nằm ngay tầm ngón cái.
+### 6.1. Bố Cục Thích Ứng (Adaptive Layout Shell)
+- **Desktop / Laptop ($\ge 1024\text{px}$)**:
+  - Form nhập hàng hiển thị dạng **Centered Dialog Modal rộng rãi (`max-w-4xl`)**:
+    - **Ghi lẻ 1 món**: 2 cột cân đối (Cột trái: Thời gian, Mặt hàng, Nhóm hàng, Nơi mua; Cột phải: Đơn vị tính, Số lượng, Đơn giá, Thanh toán).
+    - **Ghi theo hóa đơn**: Bảng nhập nhanh dạng Spreadsheet (STT, Tên món, Đơn vị, SL, Đơn giá, Thành tiền, Xóa) kèm Nơi mua chung của hóa đơn ở trên.
+- **Mobile Galaxy A35 5G ($< 1024\text{px}$)**:
+  - Bottom Sheet vuốt chạm mượt mà, chiều cao nút $\ge 44\text{px}$, font chữ input $\ge 16\text{px}$ chống auto-zoom.
 
-### 6.2. Drawer Nhập Hàng Siêu Tốc 1 Chạm (`QuickEntryDrawer`)
-- **Chế độ 1 - Ghi lẻ từng món siêu tốc (`QuickSingleItemForm`)**:
-  - Gợi ý mặt hàng tức thì (`ItemAutocomplete`) 0.1s không dấu, tự điền đơn vị và giá cũ.
-  - Tính toán 2 chiều (Số lượng $\times$ Đơn giá $\rightarrow$ Thành tiền, hoặc Số lượng + Tổng tiền trả $\rightarrow$ Đơn giá).
-  - Chip mệnh giá tiền tệ cố định (10k, 20k, 50k, 100k, 200k, 500k) và gợi ý động theo số gõ.
-- **Chế độ 2 - Ghi theo hóa đơn/lần đi chợ (`BatchReceiptForm`)**:
-  - Nhập nhiều món liên tiếp trên cùng 1 phiếu đi chợ.
-  - Tự động cộng dồn thành tiền thời gian thực.
-
-### 6.3. Bốn Màn Hình Quản Trị Cốt Lõi
+### 6.2. Năm Màn Hình Quản Trị Cốt Lõi
 1. **Trang 1: Hôm nay (`/`)**: 3 Bento KPI cards, danh sách chi tiết các đợt mua trong ngày, xóa nhanh, empty state.
-2. **Trang 2: Sổ theo ngày (`/history`)**: Bộ lọc thời gian, tìm kiếm tức thì không dấu, gom nhóm Accordion theo `dateKey`.
-3. **Trang 3: Mặt hàng & Giá (`/catalog`)**: Lọc theo 9 nhóm danh mục, hiển thị Giá gần nhất, Min - Max, số lần mua, modal thêm/sửa, nạp mẫu F&B.
-4. **Trang 4: Báo cáo & Sao lưu (`/reports`)**: Bộ chọn tháng, biểu đồ CSS thuần (`SpendingBarList`), cơ cấu nhóm hàng (`CategoryBreakdown`), Top 10 tốn kém (`TopSpendingList`), xuất CSV và sao lưu / khôi phục JSON.
+2. **Trang 2: Sổ theo ngày (`/history`)**: Bộ lọc thời gian (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tất cả), tìm kiếm tức thì không dấu, gom nhóm Accordion theo ngày.
+3. **Trang 3: Mặt hàng & Nơi mua (`/catalog`)**: 2 tab chuyển đổi tiện lợi để quản lý Mặt hàng và Nơi mua/Nhà cung cấp.
+4. **Trang 4: Báo cáo & Xuất Excel (`/reports`)**: Thanh điều hướng tháng (`< Tháng trước`, `Tháng sau >`, bộ chọn `YYYY-MM`), `AbortController` chống race condition, tải trực tiếp file `.xlsx` tự căn cột.
+5. **Trang 5: MB Bank Tracker & VietQR (`/mb-bank`)**: 3 KPI Tiền vào hôm nay, tháng này, số dư MB Bank, tự động làm mới mỗi 10 giây, mã VietQR nhận tiền tại quầy, Modal giả lập 1 chạm và Hướng dẫn kết nối 2 phút.
 
 ---
 
-## 7. 🔐 Cơ Chế Bảo Mật Single-Owner (Secret-Zero)
+## 7. 🏦 Tích Hợp MB Bank Tracker & VietQR Tại Quầy
 
-- Toàn bộ bí mật (`OWNER_USERNAME`, `OWNER_PASSWORD`, `JWT_SECRET`, `MONGODB_URI`) được đọc từ biến môi trường.
+Hệ thống cung cấp giải pháp theo dõi biến động số dư ngân hàng Quân Đội (MB Bank) hoàn toàn tự động:
+1. **Smart Parser**:
+   - Tự động bóc tách thông báo đẩy từ app MBBank trên điện thoại Android (dùng app miễn phí *Notification Forwarder* hoặc *MacroDroid*).
+   - Tự động nhận diện chuẩn JSON Webhook từ cổng *SePay.vn* hoặc *Casso.vn*.
+2. **Cơ Chế Chống Trùng Lặp**:
+   - Tự động sinh `transactionRef` duy nhất dựa trên mã tham chiếu hoặc hàm băm MD5 deterministic, đảm bảo không bao giờ bị lưu trùng giao dịch khi webhook gửi lại.
+3. **Mã VietQR Động Tại Quầy**:
+   - Sử dụng chuẩn ảnh VietQR (`https://img.vietqr.io/image/970422-{accountNo}-compact2.png`).
+   - Cho phép chủ quán gõ số tiền thanh toán của bàn để khách quét trả tiền chính xác 100%.
+
+---
+
+## 8. 🔐 Cơ Chế Bảo Mật Single-Owner (Secret-Zero)
+
+- Toàn bộ bí mật (`OWNER_USERNAME`, `OWNER_PASSWORD`, `JWT_SECRET`, `MONGODB_URI`, `MBBANK_WEBHOOK_SECRET`) được đọc từ biến môi trường (`.env.local`).
 - JWT ký bằng thuật toán HMAC-SHA256 bản địa (Native Node.js Crypto / Web Crypto), lưu trong Cookie `HttpOnly; Secure; SameSite=Lax` thời hạn 90 ngày.
-- Middleware Edge chặn toàn bộ truy cập trái phép vào Dashboard và `/api/*`.
+- Middleware Edge chặn toàn bộ truy cập trái phép vào Dashboard và `/api/*` (ngoại trừ các endpoint công khai được kiểm soát như `/login` và `/api/webhooks/mbbank`).
 
 ---
 
-## 8. ☁️ Hướng Dẫn Thiết Lập MongoDB Atlas M0 Miễn Phí
+## 9. ☁️ Hướng Dẫn Thiết Lập MongoDB Atlas M0 Miễn Phí
 
-Để ứng dụng đồng bộ dữ liệu giữa máy tính và điện thoại mọi lúc mọi nơi, hãy tạo cụm database MongoDB Atlas M0 miễn phí 100%:
-
-### Bước 1: Tạo cụm Database miễn phí
-1. Truy cập [https://cloud.mongodb.com](https://cloud.mongodb.com) và đăng ký/đăng nhập.
-2. Bấm **Create a deployment** $\rightarrow$ Chọn gói **M0 Free** (Miễn phí vĩnh viễn, 512MB lưu trữ - đủ cho hàng chục năm ghi chép nhập hàng).
-3. **Cloud Provider & Region**: Chọn **AWS** $\rightarrow$ vùng **`ap-southeast-1` (Singapore)** để đặt cùng vùng với máy chủ Vercel `sin1`, giúp truy vấn database siêu tốc.
-4. Đặt tên cụm: `Cluster0` $\rightarrow$ Bấm **Create**.
-
-### Bước 2: Tạo Người Dùng Cơ Sở Dữ Liệu (Database User)
-1. Trong mục **Security** $\rightarrow$ Chọn **Database Access** $\rightarrow$ Bấm **Add New Database User**.
-2. Authentication Method: Chọn **Password**.
-3. Username: Điền tên (ví dụ: `owner_admin`).
-4. Password: Điền mật khẩu mạnh (ví dụ: `MatKhauBaoMat2026!`).
-5. Built-in Role: Chọn **Read and write to any database** $\rightarrow$ Bấm **Add User**.
-
-### Bước 3: Cấu Hình Mạng (Whitelist IP cho Vercel)
-1. Trong mục **Security** $\rightarrow$ Chọn **Network Access** $\rightarrow$ Bấm **Add IP Address**.
-2. Bấm nút **Allow Access from Anywhere** (hệ thống sẽ tự điền `0.0.0.0/0`).
-3. *(Lưu ý bắt buộc)*: Vì Serverless Functions của Vercel sử dụng IP động thay đổi liên tục, bạn bắt buộc phải cho phép `0.0.0.0/0` để Vercel không bị chặn kết nối. Kết nối vẫn an toàn tuyệt đối nhờ xác thực Username + Password có mã hóa SSL/TLS.
-4. Bấm **Confirm**.
-
-### Bước 4: Lấy Chuỗi Kết Nối (Connection String)
-1. Quay lại trang **Database Deployments** $\rightarrow$ Bấm nút **Connect** bên cạnh cụm `Cluster0`.
-2. Chọn mục **Drivers** (Node.js).
-3. Sao chép chuỗi kết nối dạng:
-   ```env
-   mongodb+srv://<username>:<password>@cluster0.xxxx.mongodb.net/daily_purchase_db?retryWrites=true&w=majority
-   ```
-4. Thay `<password>` bằng mật khẩu đã tạo ở Bước 2.
-5. Điền chuỗi kết nối này vào biến `MONGODB_URI` trong file [.env.local](file:///d:/01_HOME/005_VIBE_AI/08_daily-purchase-admin/.env.local) và trên Vercel.
+1. Đăng ký tài khoản tại [https://cloud.mongodb.com](https://cloud.mongodb.com).
+2. Tạo cụm **M0 Free** tại vùng **AWS Singapore (`ap-southeast-1`)**.
+3. Tạo Database User (Username + Password) có quyền `Read and write to any database`.
+4. Whitelist IP: Chọn **Allow Access from Anywhere** (`0.0.0.0/0`) để Vercel kết nối được.
+5. Lấy chuỗi kết nối và điền vào biến `MONGODB_URI` trong file `.env.local` và Vercel Dashboard.
 
 ---
 
-## 9. 🚀 Hướng Dẫn Triển Khai Lên Vercel (Singapore `sin1`)
+## 10. 🚀 Hướng Dẫn Triển Khai Lên Vercel (Singapore `sin1`)
 
-Tệp [vercel.json](file:///d:/01_HOME/005_VIBE_AI/08_daily-purchase-admin/vercel.json) đã được cấu hình sẵn vùng `sin1` (Singapore) và bộ Header bảo mật cao.
-
-### Cách 1: Triển khai qua Giao Diện Vercel Web Dashboard (Khuyến nghị)
 1. Đẩy code lên GitHub repository của bạn.
-2. Đăng nhập [https://vercel.com](https://vercel.com) $\rightarrow$ Bấm **Add New...** $\rightarrow$ **Project**.
-3. Chọn GitHub repo `daily-purchase-admin` $\rightarrow$ Bấm **Import**.
-4. Mở rộng phần **Environment Variables** và cấu hình 4 biến môi trường sau:
-   - `OWNER_USERNAME`: Tên tài khoản của bạn (mặc định: `admin_owner`).
-   - `OWNER_PASSWORD`: Mã PIN hoặc mật khẩu đăng nhập của bạn (ví dụ: `211101`).
-   - `JWT_SECRET`: Khóa bí mật 64 ký tự (lấy từ `.env.local` đã sinh tự động).
-   - `MONGODB_URI`: Chuỗi kết nối MongoDB Atlas M0 đã tạo ở Mục 8.
-5. Bấm **Deploy**. Vercel sẽ tự động build và cấp phát URL dạng `https://daily-purchase-admin.vercel.app`.
-
-### Cách 2: Triển khai qua Vercel CLI
-```bash
-# Cài đặt Vercel CLI (nếu chưa có)
-npm i -g vercel
-
-# Đăng nhập và deploy
-vercel --prod
-```
+2. Vào Vercel Dashboard $\rightarrow$ **Add New Project** $\rightarrow$ Chọn repo `daily-purchase-admin`.
+3. Cấu hình các biến môi trường trong mục **Environment Variables**:
+   - `OWNER_USERNAME`: Tên đăng nhập chủ quán.
+   - `OWNER_PASSWORD`: Mật khẩu hoặc mã PIN 6 số.
+   - `JWT_SECRET`: Chuỗi khóa ngẫu nhiên 32–64 ký tự.
+   - `MONGODB_URI`: Chuỗi kết nối MongoDB Atlas M0.
+   - `MBBANK_WEBHOOK_SECRET`: Khóa bí mật bảo vệ Webhook MB Bank.
+   - `NEXT_PUBLIC_MBBANK_ACCOUNT_NO`: Số tài khoản MB Bank hiển thị QR.
+   - `NEXT_PUBLIC_MBBANK_ACCOUNT_NAME`: Tên chủ tài khoản MB Bank.
+4. Bấm **Deploy**. Toàn bộ các API route động đã được cấu hình `export const dynamic = 'force-dynamic'`, bảo đảm build thành công 100%.
 
 ---
 
-## 10. 📲 Cài Đặt PWA Trên Điện Thoại Samsung Galaxy A35 5G
+## 11. 📲 Cài Đặt PWA Trên Điện Thoại Samsung Galaxy A35 5G
 
-Sau khi deploy lên Vercel thành công:
-1. Mở trình duyệt **Google Chrome** hoặc **Samsung Internet** trên Galaxy A35 5G.
-2. Nhập URL trang web của bạn (ví dụ: `https://daily-purchase-admin.vercel.app`).
-3. Chạm vào biểu tượng **3 chấm (Menu)** ở góc trên bên phải màn hình.
-4. Chọn **"Thêm vào Màn hình chính" (Add to Home screen)** hoặc **"Cài đặt ứng dụng" (Install app)**.
-5. Ứng dụng **Sổ Nhập Hàng** sẽ xuất hiện ngay trên màn hình điện thoại với icon riêng.
-6. Khi mở từ icon màn hình chính:
-   - Ứng dụng khởi chạy toàn màn hình độc lập (**Standalone**), hoàn toàn không có thanh URL của trình duyệt.
-   - Thao tác một chạm với nút **`+ Ghi hàng`** ngay tầm với của ngón cái.
-   - Phiên đăng nhập duy trì 90 ngày liên tục mà không cần nhập lại mã PIN mỗi ngày.
+1. Mở Chrome hoặc Samsung Internet trên Galaxy A35 5G, truy cập URL Vercel của bạn.
+2. Bấm vào menu 3 chấm $\rightarrow$ Chọn **"Thêm vào Màn hình chính" (Add to Home screen)**.
+3. Ứng dụng sẽ chạy ở chế độ **Standalone** toàn màn hình, nút bấm to rõ, lưu phiên 90 ngày.
 
 ---
 
-## 11. 💻 Khởi Chạy Local & Kiểm Thử Tự Động Toàn Diện
+## 12. 💻 Khởi Chạy Local & Kiểm Thử Tự Động Toàn Diện
 
 ```bash
-# 1. Di chuyển vào thư mục dự án
-cd 08_daily-purchase-admin
+# 1. Cài đặt dependencies
+npm install
 
-# 2. Cấu hình biến môi trường
+# 2. Cấu hình môi trường
 cp .env.example .env.local
 
-# 3. Chạy toàn bộ 59 ca kiểm thử tự động
+# 3. Chạy toàn bộ 74 ca kiểm thử tự động
 npm test
 
 # 4. Kiểm tra kiểu tĩnh TypeScript
@@ -228,30 +214,42 @@ npm run build
 npm run dev
 ```
 
-### Bảng Kết Quả Kiểm Thử Tự Động (59/59 Tests 100% PASS)
+### Bảng Kết Quả Kiểm Thử Tự Động (74/74 Tests 100% PASS)
 
 | Nhóm Kiểm Thử | Số Ca Test | Trạng Thái | Mô Tả |
 | :--- | :---: | :---: | :--- |
 | **Phase 4 E2E Full Regression** | 23 | ✅ PASS | Kiểm thử trọn vẹn 11 miền chức năng (Auth, PO code, Math 2 chiều, Auto-Learn, Timezone UTC+7, Tìm kiếm không dấu, Báo cáo, CSV BOM, Backup Merge, Galaxy A35 UI, Secret-Zero) |
-| **Phase 3 UI Logic & Workflow** | 4 | ✅ PASS | Tính toán 2 chiều xuôi - ngược, dãy chip tiền tệ cố định & động, cộng dồn hóa đơn, auto-complete F&B |
+| **MB Bank Parser Unit Tests** | 5 | ✅ PASS | Trích xuất thông báo Android app push, SMS, SePay JSON, chống trùng lặp deterministic |
+| **Excel Export Unit Tests** | 1 | ✅ PASS | Sinh workbook `.xlsx` SheetJS, cấu trúc bảng 12 cột, auto-fit độ rộng cột `wch`, dòng TỔNG CỘNG |
+| **Reports Month Navigation Tests** | 3 | ✅ PASS | Khoảng chuỗi ngày `YYYY-MM-01` đến `YYYY-MM-31`, an toàn tháng 2/4/11, empty month state |
+| **Supplier & Custom Units Tests** | 3 | ✅ PASS | Chuẩn hóa tên không dấu, máy trạng thái tăng `usageCount`, hợp nhất đơn vị đo tùy chỉnh |
+| **MB Bank Webhook Routing Tests** | 2 | ✅ PASS | Xác thực Bearer, X-Secret, query param, phân định payload SePay vs Android Forwarder |
 | **Samsung Galaxy A35 5G UI/UX Audit** | 5 | ✅ PASS | Cỡ chữ $\ge 16\text{px}$ chống auto-zoom, touch targets $\ge 44\text{px}$, căn lề `tabular-nums`, triệt tiêu 100% icon AI, chống tràn ngang |
+| **Financial Currency Utils** | 5 | ✅ PASS | Format VNĐ, parse chuỗi số (150k, 1.5tr), tính dòng hàng, tính ngược đơn giá, chip tiền tệ |
+| **Vietnam Timezone & Date** | 7 | ✅ PASS | Sinh dateKey YYYY-MM-DD theo múi giờ Asia/Ho_Chi_Minh, hôm qua, tháng này, dải ngày |
+| **Vietnamese Search Normalization** | 3 | ✅ PASS | Khử dấu tiếng Việt, tìm kiếm theo từ khóa token không dấu, sinh regex |
+| **Single-Owner Authentication** | 4 | ✅ PASS | Ký và xác minh JWT HMAC-SHA256, từ chối token giả mạo, kiểm tra timing-safe password |
+| **Phase 3 UI Logic & Workflow** | 4 | ✅ PASS | Tính toán 2 chiều xuôi - ngược, dãy chip tiền tệ cố định & động, cộng dồn hóa đơn, auto-complete F&B |
 | **Purchase Workflow & Auto-Learn** | 3 | ✅ PASS | Sinh mã PO nguyên tử, tính toán 2 chiều, máy trạng thái Auto-Learn cập nhật dải giá |
 | **Reports Aggregation & Analytics** | 3 | ✅ PASS | Tổng hợp KPI theo dateKey VN, tính tỷ trọng phần trăm nhóm hàng, xếp hạng Top chi tiêu |
 | **CSV Export & JSON Backup Merge** | 3 | ✅ PASS | Tiền tố UTF-8 BOM, cấu trúc file backup JSON, cơ chế Merge / Upsert an toàn |
-| **Financial Currency Utils** | 5 | ✅ PASS | Format VNĐ, parse chuỗi số (150k, 1.5tr), tính dòng hàng, tính ngược đơn giá, chip tiền tệ |
-| **Vietnam Timezone & Date** | 6 | ✅ PASS | Sinh dateKey YYYY-MM-DD theo múi giờ Asia/Ho_Chi_Minh, hôm qua, tháng này, dải ngày |
-| **Vietnamese Search Normalization** | 3 | ✅ PASS | Khử dấu tiếng Việt, tìm kiếm theo từ khóa token không dấu, sinh regex |
-| **Single-Owner Authentication** | 4 | ✅ PASS | Ký và xác minh JWT HMAC-SHA256, từ chối token giả mạo, kiểm tra timing-safe password |
 | **Secret-Zero Scanning Audit** | 1 | ✅ PASS | Quét toàn bộ repository, phát hiện 0 chuỗi mật khẩu/secret hardcode |
-| **TỔNG CỘNG** | **59** | **100% PASS** | **59/59 tests PASS hoàn hảo, không có lỗi tiềm ẩn** |
+| **TỔNG CỘNG** | **74** | **100% PASS** | **74/74 tests PASS hoàn hảo, không có lỗi tiềm ẩn** |
 
 ---
 
-## 12. 🗺️ Lộ Trình Dự Án & Trạng Thái Nghiệm Thu 11 Bước
+## 13. 🗺️ Lộ Trình Dự Án & Trạng Thái Nghiệm Thu 11 Bước
 
-| Phase | Nội Dung Trọng Tâm | Trạng Thái Vòng Đời 11 Bước |
+| Bước Quy Trình | Trọng Tâm Nghiệm Thu | Trạng Thái |
 | :---: | :--- | :---: |
-| **Phase 1** | Khởi tạo Next.js 15, Mongoose Singleton, 3 Schemas, Utils, Auth Single-Owner & Galaxy A35 Shell | ✅ **COMPLETED & 100% TEST PASS** |
-| **Phase 2** | API Route Handlers (`/purchases`, `/catalog`, `/reports`, `/export`), Auto-Learn Catalog & Integration Tests | ✅ **COMPLETED & 100% TEST PASS** |
-| **Phase 3** | UI Design System Minimal SaaS 2026-2027, 4 Màn hình Galaxy A35 5G & Desktop, Quick Entry Drawer | ✅ **COMPLETED & 100% TEST PASS** |
-| **Phase 4** | E2E Full Regression, Vercel Serverless (sin1), PWA Standalone Galaxy A35, MongoDB Atlas M0 & Handover | ✅ **COMPLETED & 100% TEST PASS** |
+| **1. GRILL** | Phỏng vấn làm rõ toàn bộ yêu cầu Master Upgrade (Fresh & Free, Supplier, Unit, Excel, MB Bank) | ✅ **HOÀN THÀNH** |
+| **2. PLAN APPROVED** | Kế hoạch triển khai toàn diện được phê duyệt | ✅ **HOÀN THÀNH** |
+| **3. IMPLEMENT** | Hiện thực hóa toàn bộ 6 hạng mục nâng cấp | ✅ **HOÀN THÀNH** |
+| **4. TEST** | Xây dựng và thực thi bộ kiểm thử Unit & Integration mới | ✅ **HOÀN THÀNH** |
+| **5. FIX ↺** | Sửa triệt để các lỗi biên dịch, kiểu dữ liệu và regex boundary | ✅ **HOÀN THÀNH** |
+| **6. TEST PASS** | 74/74 tests tự động đạt 100% PASS | ✅ **HOÀN THÀNH** |
+| **7. AUDIT** | Kiểm toán UI/UX Galaxy A35 5G & Quét Secret-Zero 100% sạch | ✅ **HOÀN THÀNH** |
+| **8. HARDEN** | Thêm dynamic force, cấu hình ảnh VietQR, chống race condition | ✅ **HOÀN THÀNH** |
+| **9. REGRESSION PASS** | Bộ kiểm thử E2E Full Regression 23/23 tests đạt 100% PASS | ✅ **HOÀN THÀNH** |
+| **10. ACCEPTED** | Toàn bộ 6 hạng mục hoạt động hoàn hảo và sẵn sàng bàn giao | ✅ **HOÀN THÀNH** |
+| **11. CLOSED** | Bàn giao tài liệu song ngữ và đóng chu trình nâng cấp | ✅ **HOÀN THÀNH** |

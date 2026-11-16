@@ -34,14 +34,14 @@ export function QuickAmountChips({
         )}
       </div>
 
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none overscroll-x-contain">
+      <div className="flex flex-wrap gap-2">
         {/* Dynamic Chips (Hiện nổi bật lên đầu nếu có) */}
         {dynamicChips.map((amount) => (
           <button
             key={`dyn-${amount}`}
             type="button"
             onClick={() => onSelectAmount(amount)}
-            className="min-h-[44px] px-3.5 rounded-xl bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 text-sm font-semibold whitespace-nowrap shadow-xs active:scale-95 cursor-pointer flex items-center justify-center shrink-0 border border-transparent transition-all"
+            className="min-h-[44px] px-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold whitespace-nowrap shadow-sm shadow-orange-500/25 active:scale-95 cursor-pointer flex items-center justify-center border border-orange-400 transition-all font-mono tabular-nums"
           >
             {formatVND(amount)}
           </button>
@@ -57,7 +57,7 @@ export function QuickAmountChips({
               key={`fix-${amount}`}
               type="button"
               onClick={() => onSelectAmount(amount)}
-              className="min-h-[44px] px-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800/80 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700/80 text-sm font-medium whitespace-nowrap active:scale-95 cursor-pointer flex items-center justify-center shrink-0 transition-all font-mono tabular-nums"
+              className="min-h-[44px] px-3 rounded-xl bg-white hover:bg-emerald-50 text-slate-800 hover:text-emerald-800 border border-[#D8EFE9] hover:border-emerald-400 text-sm font-semibold whitespace-nowrap active:scale-95 cursor-pointer flex items-center justify-center transition-all font-mono tabular-nums shadow-2xs"
             >
               {formatVND(amount)}
             </button>

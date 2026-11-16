@@ -44,14 +44,14 @@ export function CategoryBreakdown({ categories, grandTotal = 0 }: CategoryBreakd
           </div>
 
           {/* Progress bar */}
-          <div className="h-2 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+          <div className="h-2 w-full bg-emerald-50 border border-emerald-100 rounded-full overflow-hidden">
             <div
               style={{ width: `${Math.min(100, Math.max(1, cat.percentage))}%` }}
-              className="h-full bg-zinc-900 dark:bg-zinc-100 rounded-full transition-all duration-300"
+              className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-300"
             />
           </div>
 
-          <div className="flex items-center justify-between text-[11px] text-zinc-400">
+          <div className="flex items-center justify-between text-[11px] text-slate-500">
             <span>{cat.itemCount} món đã mua</span>
             <span className="font-mono tabular-nums">Tổng SL: {cat.totalQuantity}</span>
           </div>
@@ -59,9 +59,9 @@ export function CategoryBreakdown({ categories, grandTotal = 0 }: CategoryBreakd
       ))}
 
       {grandTotal > 0 && (
-        <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs font-semibold">
-          <span className="text-zinc-600 dark:text-zinc-400">Tổng chi các nhóm:</span>
-          <span className="font-mono tabular-nums text-sm text-zinc-900 dark:text-zinc-100">
+        <div className="pt-3 border-t border-[#D8EFE9] flex items-center justify-between text-xs font-bold">
+          <span className="text-slate-700">Tổng chi các nhóm:</span>
+          <span className="font-mono tabular-nums text-sm text-emerald-700 font-extrabold">
             {formatVND(grandTotal)}
           </span>
         </div>

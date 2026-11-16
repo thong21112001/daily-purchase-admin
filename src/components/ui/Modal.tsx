@@ -31,33 +31,33 @@ export function Modal({ isOpen, onClose, title, description, children, className
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in"
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-in fade-in"
         onClick={onClose}
       />
 
       {/* Modal Dialog */}
       <div
         className={cn(
-          "relative z-50 w-full max-w-lg md:max-w-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 shadow-2xl animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto",
+          "relative z-50 w-full max-w-lg md:max-w-2xl bg-white border border-[#D8EFE9] rounded-2xl p-4 sm:p-6 shadow-2xl animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto",
           className
         )}
       >
-        <div className="flex items-start justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800">
+        <div className="flex items-start justify-between pb-3 border-b border-[#D8EFE9]">
           <div>
             {title && (
-              <h3 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-lg font-bold tracking-tight text-slate-900">
                 {title}
               </h3>
             )}
             {description && (
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 {description}
               </p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="min-h-[44px] min-w-[44px] -mr-2 -mt-1 p-2 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 flex items-center justify-center cursor-pointer"
+            className="min-h-[44px] min-w-[44px] -mr-2 -mt-1 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-emerald-50 flex items-center justify-center cursor-pointer transition-colors"
             aria-label="Đóng"
           >
             <X className="w-5 h-5" />

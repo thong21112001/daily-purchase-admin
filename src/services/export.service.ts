@@ -1,8 +1,10 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import { PurchaseLog } from "@/models/purchase-log.model";
 import { CatalogItem } from "@/models/catalog-item.model";
+import { Supplier } from "@/models/supplier.model";
 import { Counter } from "@/models/counter.model";
 import { formatDateVN, getDateRange } from "@/lib/utils/date";
+import * as XLSX from "xlsx";
 
 export interface BackupDataPayload {
   app: string;
@@ -11,9 +13,155 @@ export interface BackupDataPayload {
   counters: any[];
   catalogItems: any[];
   purchaseLogs: any[];
+  suppliers?: any[];
 }
 
 export class ExportService {
+  /**
+   * Xuất file Excel (.xlsx) chuẩn với độ rộng cột tự động và dòng tổng cộng
+   */
+  static async generatePurchaseExcel(
+    startDateKey?: string,
+    endDateKey?: string,
+    monthKey?: string
+  ): Promise<Buffer> {
+    await connectToDatabase();
+
+    let start = startDateKey;
+    let end = endDateKey;
+
+    if (!start && !end) {
+      if (monthKey) {
+        start = `${monthKey}-01`;
+        end = `${monthKey}-31`;
+      } else {
+        const range = getDateRange("this_month");
+        start = range.startDateKey;
+        end = range.endDateKey;
+      }
+    }
+
+    const query: Record<string, any> = {
+      dateKey: {
+        $gte: start,
+        $lte: end,
+      },
+    };
+
+    const purchases = await PurchaseLog.find(query).sort({ dateKey: -1, code: -1 }).lean();
+
+    const headers = [
+      "STT",
+      "Ngày mua",
+      "Mã phiếu",
+      "Nơi mua / Nhà cung cấp",
+      "Tên mặt hàng",
+      "Nhóm hàng",
+      "Đơn vị",
+      "Số lượng",
+      "Đơn giá (VNĐ)",
+      "Thành tiền (VNĐ)",
+      "Thanh toán",
+      "Ghi chú",
+    ];
+
+    const minWidths = [6, 14, 18, 25, 30, 22, 12, 12, 18, 20, 16, 28];
+
+    const tableData: any[][] = [];
+    tableData.push(headers);
+
+    let stt = 1;
+    let totalQty = 0;
+    let grandTotal = 0;
+
+    for (const p of purchases) {
+      const dateStr = formatDateVN(p.purchaseDate);
+      const supplierStr = p.supplier || "Không ghi";
+      const payMethodStr = p.paymentMethod === "TRANSFER" ? "Chuyển khoản" : "Tiền mặt";
+      const receiptNoteStr = p.note || "";
+
+      if (p.items && p.items.length > 0) {
+        for (const item of p.items) {
+          const itemNoteStr = item.note
+            ? item.note + (receiptNoteStr ? ` (${receiptNoteStr})` : "")
+            : receiptNoteStr;
+
+          tableData.push([
+            stt++,
+            dateStr,
+            p.code,
+            supplierStr,
+            item.name,
+            item.category || "Khác",
+            item.unit,
+            item.quantity,
+            item.unitPrice,
+            item.lineTotal,
+            payMethodStr,
+            itemNoteStr,
+          ]);
+
+          totalQty += Number(item.quantity) || 0;
+          grandTotal += Number(item.lineTotal) || 0;
+        }
+      } else {
+        tableData.push([
+          stt++,
+          dateStr,
+          p.code,
+          supplierStr,
+          "—",
+          "—",
+          "—",
+          0,
+          0,
+          p.totalAmount,
+          payMethodStr,
+          receiptNoteStr,
+        ]);
+        grandTotal += Number(p.totalAmount) || 0;
+      }
+    }
+
+    // Dòng TỔNG CỘNG
+    tableData.push([
+      "TỔNG CỘNG",
+      "",
+      "",
+      "",
+      `${stt - 1} mặt hàng`,
+      "",
+      "",
+      Math.round(totalQty * 100) / 100,
+      "",
+      grandTotal,
+      "",
+      "",
+    ]);
+
+    // Tính toán độ rộng cột tự động
+    const colWidths = minWidths.map((minW, colIdx) => {
+      let maxLen = minW;
+      for (const row of tableData) {
+        const val = row[colIdx];
+        if (val !== undefined && val !== null) {
+          const str = typeof val === "number" ? val.toLocaleString("vi-VN") : String(val);
+          if (str.length > maxLen) {
+            maxLen = str.length;
+          }
+        }
+      }
+      return { wch: maxLen + 3 };
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(tableData);
+    ws["!cols"] = colWidths;
+    XLSX.utils.book_append_sheet(wb, ws, "So_Nhap_Hang");
+
+    return XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer;
+  }
+
   /**
    * Sinh chuỗi dữ liệu CSV xuất khẩu kèm UTF-8 BOM (\uFEFF)
    * Tương thích 100% với Microsoft Excel tiếng Việt trên Windows
@@ -113,10 +261,11 @@ export class ExportService {
   static async generateBackupJSON(): Promise<BackupDataPayload> {
     await connectToDatabase();
 
-    const [counters, catalogItems, purchaseLogs] = await Promise.all([
+    const [counters, catalogItems, purchaseLogs, suppliers] = await Promise.all([
       Counter.find().lean(),
       CatalogItem.find().lean(),
       PurchaseLog.find().lean(),
+      Supplier.find().lean(),
     ]);
 
     return {
@@ -126,6 +275,7 @@ export class ExportService {
       counters,
       catalogItems,
       purchaseLogs,
+      suppliers,
     };
   }
 
@@ -220,12 +370,23 @@ export class ExportService {
       }
     }
 
+    // 4. Merge Suppliers
+    let restoredSuppliers = 0;
+    if (Array.isArray(payload.suppliers)) {
+      for (const s of payload.suppliers) {
+        if (!s.name) continue;
+        await Supplier.upsertByName(s.name, s.category || "Chợ", s.note || "");
+        restoredSuppliers++;
+      }
+    }
+
     return {
       success: true,
       restoredCounters,
       restoredCatalog,
       restoredPurchases,
-      message: `Đã khôi phục thành công: ${restoredPurchases} phiếu mua hàng, ${restoredCatalog} mặt hàng danh mục`,
+      restoredSuppliers,
+      message: `Đã khôi phục thành công: ${restoredPurchases} phiếu mua hàng, ${restoredCatalog} mặt hàng, ${restoredSuppliers} nơi mua`,
     };
   }
 }

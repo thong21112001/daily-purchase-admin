@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingBag, Calendar, Package, BarChart3, Plus } from "lucide-react";
+import { ShoppingBag, Calendar, BarChart3, Plus, Landmark } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 interface MobileBottomNavProps {
@@ -13,16 +13,8 @@ interface MobileBottomNavProps {
 export function MobileBottomNav({ onOpenQuickEntry }: MobileBottomNavProps) {
   const pathname = usePathname();
 
-  const navTabs = [
-    { label: "Hôm nay", href: "/", icon: ShoppingBag },
-    { label: "Sổ ngày", href: "/history", icon: Calendar },
-    // Center button slot
-    { label: "Mặt hàng", href: "/catalog", icon: Package },
-    { label: "Báo cáo", href: "/reports", icon: BarChart3 },
-  ];
-
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border-t border-zinc-200 dark:border-zinc-800 pb-safe select-none">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#D8EFE9] pb-safe select-none shadow-[0_-4px_20px_rgba(16,185,129,0.06)]">
       <div className="h-16 px-2 flex items-center justify-around relative max-w-lg mx-auto">
         {/* Tab 1: Hôm nay */}
         <Link
@@ -30,8 +22,8 @@ export function MobileBottomNav({ onOpenQuickEntry }: MobileBottomNavProps) {
           className={cn(
             "flex flex-col items-center justify-center min-w-[56px] min-h-[44px] px-1 py-1 rounded-xl text-[11px] font-medium transition-colors",
             pathname === "/"
-              ? "text-zinc-950 dark:text-zinc-50 font-bold"
-              : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+              ? "text-emerald-700 font-bold"
+              : "text-slate-400 hover:text-slate-600"
           )}
         >
           <ShoppingBag className="w-5 h-5 mb-0.5" />
@@ -44,51 +36,51 @@ export function MobileBottomNav({ onOpenQuickEntry }: MobileBottomNavProps) {
           className={cn(
             "flex flex-col items-center justify-center min-w-[56px] min-h-[44px] px-1 py-1 rounded-xl text-[11px] font-medium transition-colors",
             pathname === "/history"
-              ? "text-zinc-950 dark:text-zinc-50 font-bold"
-              : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+              ? "text-emerald-700 font-bold"
+              : "text-slate-400 hover:text-slate-600"
           )}
         >
           <Calendar className="w-5 h-5 mb-0.5" />
           <span>Sổ ngày</span>
         </Link>
 
-        {/* Nút trung tâm: + Ghi hàng (Nổi bật, ngay tầm ngón cái) */}
+        {/* Nút trung tâm: + Ghi hàng (Cam Đào tươi sáng, ngay tầm ngón cái) */}
         <div className="relative -top-4 flex items-center justify-center">
           <button
             onClick={onOpenQuickEntry}
-            className="w-14 h-14 rounded-2xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 flex flex-col items-center justify-center shadow-lg active:scale-90 transition-all cursor-pointer border-2 border-white dark:border-zinc-950"
+            className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white flex flex-col items-center justify-center shadow-lg shadow-orange-500/30 active:scale-90 transition-all cursor-pointer border-2 border-white"
             aria-label="Ghi hàng mới"
           >
             <Plus className="w-6 h-6 stroke-[2.5]" />
           </button>
         </div>
 
-        {/* Tab 3: Mặt hàng & Giá */}
-        <Link
-          href="/catalog"
-          className={cn(
-            "flex flex-col items-center justify-center min-w-[56px] min-h-[44px] px-1 py-1 rounded-xl text-[11px] font-medium transition-colors",
-            pathname === "/catalog"
-              ? "text-zinc-950 dark:text-zinc-50 font-bold"
-              : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-          )}
-        >
-          <Package className="w-5 h-5 mb-0.5" />
-          <span>Mặt hàng</span>
-        </Link>
-
-        {/* Tab 4: Báo cáo & Sao lưu */}
+        {/* Tab 4: Báo cáo */}
         <Link
           href="/reports"
           className={cn(
             "flex flex-col items-center justify-center min-w-[56px] min-h-[44px] px-1 py-1 rounded-xl text-[11px] font-medium transition-colors",
             pathname === "/reports"
-              ? "text-zinc-950 dark:text-zinc-50 font-bold"
-              : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+              ? "text-emerald-700 font-bold"
+              : "text-slate-400 hover:text-slate-600"
           )}
         >
           <BarChart3 className="w-5 h-5 mb-0.5" />
           <span>Báo cáo</span>
+        </Link>
+
+        {/* Tab 5: MB Bank (Xanh Trời) */}
+        <Link
+          href="/mb-bank"
+          className={cn(
+            "flex flex-col items-center justify-center min-w-[56px] min-h-[44px] px-1 py-1 rounded-xl text-[11px] font-medium transition-colors",
+            pathname === "/mb-bank"
+              ? "text-sky-600 font-bold"
+              : "text-slate-400 hover:text-slate-600"
+          )}
+        >
+          <Landmark className="w-5 h-5 mb-0.5" />
+          <span>MB Bank</span>
         </Link>
       </div>
     </nav>

@@ -59,7 +59,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
         refreshTick,
       }}
     >
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col lg:flex-row w-full max-w-full overflow-x-hidden">
+        <div className="min-h-screen bg-[#F4FBF9] text-slate-900 flex flex-col lg:flex-row w-full max-w-full overflow-x-hidden">
           {/* 1. Sidebar cố định trên Desktop (w-64) */}
           <DesktopSidebar onOpenQuickEntry={() => setIsQuickEntryOpen(true)} />
 

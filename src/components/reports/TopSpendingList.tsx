@@ -28,7 +28,7 @@ export function TopSpendingList({ items }: TopSpendingListProps) {
   }
 
   return (
-    <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+    <div className="divide-y divide-emerald-50">
       {items.map((item, index) => (
         <div
           key={`${item.name}-${index}`}
@@ -36,11 +36,21 @@ export function TopSpendingList({ items }: TopSpendingListProps) {
         >
           {/* Thứ hạng & Tên mặt hàng */}
           <div className="flex items-center gap-3 min-w-0">
-            <span className="w-5 text-center font-mono font-bold text-zinc-400 text-xs shrink-0">
-              {index + 1}
+            <span
+              className={`w-6 h-6 rounded-lg text-center font-mono font-bold text-xs shrink-0 flex items-center justify-center ${
+                index === 0
+                  ? "bg-amber-100 text-amber-800 font-extrabold"
+                  : index === 1
+                  ? "bg-slate-200 text-slate-800"
+                  : index === 2
+                  ? "bg-orange-100 text-orange-800"
+                  : "text-slate-400"
+              }`}
+            >
+              #{index + 1}
             </span>
             <div className="min-w-0">
-              <div className="font-medium text-zinc-900 dark:text-zinc-100 truncate">
+              <div className="font-semibold text-slate-900 truncate">
                 {item.name}
               </div>
               <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
@@ -49,7 +59,7 @@ export function TopSpendingList({ items }: TopSpendingListProps) {
                     {item.category}
                   </Badge>
                 )}
-                <span className="text-[11px] text-zinc-400">
+                <span className="text-[11px] text-slate-500">
                   {item.purchaseCount} lần mua ({item.totalQuantity} {item.unit})
                 </span>
               </div>
@@ -58,10 +68,10 @@ export function TopSpendingList({ items }: TopSpendingListProps) {
 
           {/* Chi phí & Giá trung bình */}
           <div className="text-right shrink-0">
-            <div className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
+            <div className="font-mono tabular-nums font-bold text-slate-900 text-sm">
               {formatVND(item.totalAmount)}
             </div>
-            <div className="text-[11px] font-mono tabular-nums text-zinc-400">
+            <div className="text-[11px] font-mono tabular-nums text-emerald-700 font-medium">
               TB {formatVND(Math.round(item.avgUnitPrice))}/{item.unit}
             </div>
           </div>

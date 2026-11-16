@@ -1,9 +1,22 @@
 import { NextResponse } from "next/server";
 import { CatalogService } from "@/services/catalog.service";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
+
+    // Lấy danh sách toàn bộ đơn vị tính (phổ biến + người dùng từng tạo)
+    if (searchParams.get("units") === "true") {
+      const units = await CatalogService.getAvailableUnits();
+      return NextResponse.json({
+        success: true,
+        statusCode: 200,
+        data: units,
+        timestamp: new Date().toISOString(),
+      });
+    }
 
     // Kích hoạt seed danh mục mẫu cà phê nếu được yêu cầu
     if (searchParams.get("seed") === "true") {

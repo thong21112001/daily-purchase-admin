@@ -7,16 +7,17 @@ export class ReportService {
    * Tính toán các chỉ số KPI then chốt trên Dashboard:
    * - Chi hôm nay
    * - Chi hôm qua
-   * - Lũy kế tháng này
+   * - Lũy kế tháng được chọn (mặc định tháng này)
    * - Số món đã mua hôm nay
    * - Số lần đi mua (phiếu) hôm nay
    */
-  static async getDashboardKPIs() {
+  static async getDashboardKPIs(targetMonth?: string) {
     await connectToDatabase();
 
     const todayKey = getTodayKey();
     const yesterdayKey = getYesterdayKey();
     const currentMonthKey = getMonthKey();
+    const selectedMonthKey = targetMonth || currentMonthKey;
 
     const [todayAgg, yesterdayAgg, monthAgg] = await Promise.all([
       // 1. Chi tiêu hôm nay
@@ -44,9 +45,16 @@ export class ReportService {
         },
       ]),
 
-      // 3. Lũy kế tháng này
+      // 3. Lũy kế tháng được chỉ định
       PurchaseLog.aggregate([
-        { $match: { dateKey: { $regex: `^${currentMonthKey}` } } },
+        {
+          $match: {
+            dateKey: {
+              $gte: `${selectedMonthKey}-01`,
+              $lte: `${selectedMonthKey}-31`,
+            },
+          },
+        },
         {
           $group: {
             _id: null,
@@ -74,7 +82,7 @@ export class ReportService {
         purchaseCount: yesterdayData.purchaseCount,
       },
       thisMonth: {
-        monthKey: currentMonthKey,
+        monthKey: selectedMonthKey,
         totalAmount: monthData.totalAmount,
         purchaseCount: monthData.purchaseCount,
       },
@@ -91,7 +99,14 @@ export class ReportService {
     const targetMonth = monthKey || getMonthKey();
 
     const dailyData = await PurchaseLog.aggregate([
-      { $match: { dateKey: { $regex: `^${targetMonth}` } } },
+      {
+        $match: {
+          dateKey: {
+            $gte: `${targetMonth}-01`,
+            $lte: `${targetMonth}-31`,
+          },
+        },
+      },
       {
         $group: {
           _id: "$dateKey",
@@ -121,17 +136,29 @@ export class ReportService {
   /**
    * Phân bổ chi tiêu theo nhóm danh mục hàng hóa (Category Breakdown)
    */
-  static async getCategoryBreakdown(startDateKey?: string, endDateKey?: string) {
+  static async getCategoryBreakdown(startDateKey?: string, endDateKey?: string, monthKey?: string) {
     await connectToDatabase();
 
-    const range = getDateRange("this_month", startDateKey, endDateKey);
+    let start = startDateKey;
+    let end = endDateKey;
+
+    if (!start && !end) {
+      if (monthKey) {
+        start = `${monthKey}-01`;
+        end = `${monthKey}-31`;
+      } else {
+        const range = getDateRange("this_month");
+        start = range.startDateKey;
+        end = range.endDateKey;
+      }
+    }
 
     const breakdown = await PurchaseLog.aggregate([
       {
         $match: {
           dateKey: {
-            $gte: startDateKey || range.startDateKey,
-            $lte: endDateKey || range.endDateKey,
+            $gte: start,
+            $lte: end,
           },
         },
       },
@@ -172,17 +199,29 @@ export class ReportService {
   /**
    * Top các mặt hàng tốn nhiều tiền nhất trong khoảng thời gian
    */
-  static async getTopSpendingItems(startDateKey?: string, endDateKey?: string, limit = 10) {
+  static async getTopSpendingItems(startDateKey?: string, endDateKey?: string, limit = 10, monthKey?: string) {
     await connectToDatabase();
 
-    const range = getDateRange("this_month", startDateKey, endDateKey);
+    let start = startDateKey;
+    let end = endDateKey;
+
+    if (!start && !end) {
+      if (monthKey) {
+        start = `${monthKey}-01`;
+        end = `${monthKey}-31`;
+      } else {
+        const range = getDateRange("this_month");
+        start = range.startDateKey;
+        end = range.endDateKey;
+      }
+    }
 
     const topItems = await PurchaseLog.aggregate([
       {
         $match: {
           dateKey: {
-            $gte: startDateKey || range.startDateKey,
-            $lte: endDateKey || range.endDateKey,
+            $gte: start,
+            $lte: end,
           },
         },
       },

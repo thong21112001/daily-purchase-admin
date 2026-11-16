@@ -12,7 +12,7 @@ export const CustomSelect = React.forwardRef<HTMLSelectElement, CustomSelectProp
     return (
       <div className="w-full space-y-1.5">
         {label && (
-          <label htmlFor={id} className="block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          <label htmlFor={id} className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
             {label}
           </label>
         )}
@@ -21,7 +21,7 @@ export const CustomSelect = React.forwardRef<HTMLSelectElement, CustomSelectProp
             id={id}
             ref={ref}
             className={cn(
-              "w-full min-h-[44px] h-11 px-3.5 pr-10 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-base focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 appearance-none cursor-pointer transition-colors",
+              "w-full min-h-[44px] h-11 px-3.5 pr-10 rounded-xl border border-[#D8EFE9] bg-white text-slate-900 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 appearance-none cursor-pointer transition-colors shadow-xs font-medium",
               className
             )}
             {...props}

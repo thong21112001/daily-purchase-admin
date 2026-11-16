@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { CatalogService } from "@/services/catalog.service";
 
+export const dynamic = "force-dynamic";
+
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;

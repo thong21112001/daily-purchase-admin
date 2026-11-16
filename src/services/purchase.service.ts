@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import { PurchaseLog, type IPurchaseItem, type IPurchaseLog } from "@/models/purchase-log.model";
 import { CatalogItem } from "@/models/catalog-item.model";
+import { SupplierService } from "@/services/supplier.service";
 import { Counter } from "@/models/counter.model";
 import { getDateKey, getTodayKey } from "@/lib/utils/date";
 import { normalizeVietnamese, matchesUnaccented } from "@/lib/utils/vietnamese-search";
@@ -97,6 +98,15 @@ export class PurchaseService {
       }
     }
 
+    // 5. Kích hoạt Auto-Learn Supplier: Tự động học nơi mua/nhà cung cấp
+    if (data.supplier?.trim()) {
+      try {
+        await SupplierService.upsertSupplier(data.supplier.trim());
+      } catch (err) {
+        console.error(`[AutoLearnSupplier Error] Không thể cập nhật nơi mua: ${data.supplier}`, err);
+      }
+    }
+
     return purchase;
   }
 
@@ -174,7 +184,16 @@ export class PurchaseService {
     const purchase = await PurchaseLog.findById(id);
     if (!purchase) return null;
 
-    if (data.supplier !== undefined) purchase.supplier = data.supplier.trim();
+    if (data.supplier !== undefined) {
+      purchase.supplier = data.supplier.trim();
+      if (purchase.supplier) {
+        try {
+          await SupplierService.upsertSupplier(purchase.supplier);
+        } catch (err) {
+          console.error(`[AutoLearnSupplier Error] Không thể cập nhật nơi mua: ${purchase.supplier}`, err);
+        }
+      }
+    }
     if (data.paymentMethod !== undefined) purchase.paymentMethod = data.paymentMethod;
     if (data.note !== undefined) purchase.note = data.note.trim();
 

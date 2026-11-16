@@ -1,7 +1,7 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import { CatalogItem, type ICatalogItem } from "@/models/catalog-item.model";
 import { normalizeVietnamese } from "@/lib/utils/vietnamese-search";
-import { COFFEE_SHOP_STARTER_ITEMS } from "@/lib/constants/categories";
+import { COFFEE_SHOP_STARTER_ITEMS, COMMON_UNITS } from "@/lib/constants/categories";
 
 export interface CreateCatalogItemDTO {
   name: string;
@@ -18,6 +18,24 @@ export interface CatalogQueryOptions {
 }
 
 export class CatalogService {
+  /**
+   * Lấy danh sách tất cả các đơn vị tính có sẵn (gồm đơn vị phổ biến và đơn vị người dùng tự tạo)
+   */
+  static async getAvailableUnits(): Promise<string[]> {
+    await connectToDatabase();
+    try {
+      const customUnits = await CatalogItem.distinct("defaultUnit");
+      const unitSet = new Set<string>(COMMON_UNITS);
+      for (const u of customUnits) {
+        if (u && typeof u === "string" && u.trim()) {
+          unitSet.add(u.trim());
+        }
+      }
+      return Array.from(unitSet);
+    } catch {
+      return [...COMMON_UNITS];
+    }
+  }
   /**
    * Tìm kiếm gợi ý mặt hàng tức thì theo từ khóa không dấu (Unaccented Search)
    * Sắp xếp theo độ phổ biến (usageCount giảm dần) để các món hay mua xuất hiện đầu tiên

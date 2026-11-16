@@ -60,8 +60,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 2. Bỏ qua endpoint đăng nhập và kiểm tra health
-  if (pathname === "/login" || pathname === "/api/auth/login" || pathname === "/api/health") {
+  // 2. Bỏ qua endpoint đăng nhập, kiểm tra health và public webhook (MB Bank)
+  if (
+    pathname === "/login" ||
+    pathname === "/api/auth/login" ||
+    pathname === "/api/health" ||
+    pathname.startsWith("/api/webhooks/")
+  ) {
     return NextResponse.next();
   }
 
