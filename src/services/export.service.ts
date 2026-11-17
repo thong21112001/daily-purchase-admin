@@ -18,7 +18,7 @@ export interface BackupDataPayload {
 
 export class ExportService {
   /**
-   * Xuất file Excel (.xlsx) chuẩn với độ rộng cột tự động và dòng tổng cộng
+   * Xuất file Excel (.xlsx) chuẩn với phân tách từng ngày, tổng ngày riêng và dòng tổng cộng toàn kỳ
    */
   static async generatePurchaseExcel(
     startDateKey?: string,
@@ -65,74 +65,126 @@ export class ExportService {
       "Ghi chú",
     ];
 
-    const minWidths = [6, 14, 18, 25, 30, 22, 12, 12, 18, 20, 16, 28];
+    const minWidths = [18, 14, 18, 25, 30, 22, 12, 12, 18, 20, 16, 28];
 
     const tableData: any[][] = [];
     tableData.push(headers);
 
-    let stt = 1;
-    let totalQty = 0;
-    let grandTotal = 0;
-
+    // Gom nhóm phiếu theo ngày dateKey để tính tổng ngày và cách dòng
+    const groupedByDate: Record<string, typeof purchases> = {};
     for (const p of purchases) {
-      const dateStr = formatDateVN(p.purchaseDate);
-      const supplierStr = p.supplier || "Không ghi";
-      const payMethodStr = p.paymentMethod === "TRANSFER" ? "Chuyển khoản" : "Tiền mặt";
-      const receiptNoteStr = p.note || "";
+      const dKey = p.dateKey || "CHUA_RO";
+      if (!groupedByDate[dKey]) {
+        groupedByDate[dKey] = [];
+      }
+      groupedByDate[dKey].push(p);
+    }
 
-      if (p.items && p.items.length > 0) {
-        for (const item of p.items) {
-          const itemNoteStr = item.note
-            ? item.note + (receiptNoteStr ? ` (${receiptNoteStr})` : "")
-            : receiptNoteStr;
+    const sortedDates = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a));
 
+    let stt = 1;
+    let grandQty = 0;
+    let grandTotal = 0;
+    let grandItemCount = 0;
+
+    for (let i = 0; i < sortedDates.length; i++) {
+      const dKey = sortedDates[i];
+      const dayPurchases = groupedByDate[dKey];
+
+      let dayItemCount = 0;
+      let dayQty = 0;
+      let dayTotal = 0;
+      let dateVNStr = "";
+
+      for (const p of dayPurchases) {
+        const dateStr = formatDateVN(p.purchaseDate);
+        dateVNStr = dateStr;
+        const supplierStr = p.supplier || "Không ghi";
+        const payMethodStr = p.paymentMethod === "TRANSFER" ? "Chuyển khoản" : "Tiền mặt";
+        const receiptNoteStr = p.note || "";
+
+        if (p.items && p.items.length > 0) {
+          for (const item of p.items) {
+            const itemNoteStr = item.note
+              ? item.note + (receiptNoteStr ? ` (${receiptNoteStr})` : "")
+              : receiptNoteStr;
+
+            tableData.push([
+              stt++,
+              dateStr,
+              p.code,
+              supplierStr,
+              item.name,
+              item.category || "Khác",
+              item.unit,
+              item.quantity,
+              item.unitPrice,
+              item.lineTotal,
+              payMethodStr,
+              itemNoteStr,
+            ]);
+
+            const q = Number(item.quantity) || 0;
+            const t = Number(item.lineTotal) || 0;
+            dayItemCount += 1;
+            dayQty += q;
+            dayTotal += t;
+          }
+        } else {
           tableData.push([
             stt++,
             dateStr,
             p.code,
             supplierStr,
-            item.name,
-            item.category || "Khác",
-            item.unit,
-            item.quantity,
-            item.unitPrice,
-            item.lineTotal,
+            "—",
+            "—",
+            "—",
+            0,
+            0,
+            p.totalAmount,
             payMethodStr,
-            itemNoteStr,
+            receiptNoteStr,
           ]);
 
-          totalQty += Number(item.quantity) || 0;
-          grandTotal += Number(item.lineTotal) || 0;
+          dayItemCount += 1;
+          dayTotal += Number(p.totalAmount) || 0;
         }
-      } else {
-        tableData.push([
-          stt++,
-          dateStr,
-          p.code,
-          supplierStr,
-          "—",
-          "—",
-          "—",
-          0,
-          0,
-          p.totalAmount,
-          payMethodStr,
-          receiptNoteStr,
-        ]);
-        grandTotal += Number(p.totalAmount) || 0;
       }
+
+      grandItemCount += dayItemCount;
+      grandQty += dayQty;
+      grandTotal += dayTotal;
+
+      // Dòng TỔNG NGÀY riêng biệt cho ngày này
+      tableData.push([
+        "TỔNG NGÀY",
+        dateVNStr || dKey,
+        "",
+        "",
+        `${dayItemCount} mặt hàng`,
+        "",
+        "",
+        Math.round(dayQty * 100) / 100,
+        "",
+        dayTotal,
+        "",
+        "",
+      ]);
+
+      // Dòng trống cách biệt giữa các ngày để chống nhìn nhầm (theo yêu cầu user)
+      tableData.push(["", "", "", "", "", "", "", "", "", "", "", ""]);
     }
 
-    // Dòng TỔNG CỘNG
+    // Dòng TỔNG CỘNG TOÀN KỲ ở cuối cùng
     tableData.push([
-      "TỔNG CỘNG",
+      "TỔNG CỘNG TOÀN KỲ",
       "",
       "",
       "",
-      `${stt - 1} mặt hàng`,
+      `${grandItemCount} mặt hàng`,
       "",
       "",
-      Math.round(totalQty * 100) / 100,
+      Math.round(grandQty * 100) / 100,
       "",
       grandTotal,
       "",

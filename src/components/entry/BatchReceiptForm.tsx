@@ -7,7 +7,7 @@ import { ItemAutocomplete, type SelectedItemPayload } from "./ItemAutocomplete";
 import { SupplierAutocomplete } from "./SupplierAutocomplete";
 import { PurchaseDateSelector } from "./PurchaseDateSelector";
 import { CatalogItemPickerModal } from "./CatalogItemPickerModal";
-import { COMMON_UNITS } from "@/lib/constants/categories";
+import { COMMON_UNITS, DEFAULT_PURCHASE_CATEGORIES } from "@/lib/constants/categories";
 import { formatVND, parseVND, calculateLineTotal, reverseUnitPrice } from "@/lib/utils/currency";
 import { getTodayKey } from "@/lib/utils/date";
 
@@ -330,7 +330,6 @@ export function BatchReceiptForm({ onSuccess, onCancel }: BatchReceiptFormProps)
                 <div className="md:col-span-4">
                   <div className="flex items-center justify-between gap-2 md:hidden mb-1">
                     <span className="text-xs font-bold text-emerald-700 font-mono">#{idx + 1}</span>
-                    <span className="text-xs text-slate-500">{row.category}</span>
                   </div>
                   <ItemAutocomplete
                     value={row.name}
@@ -404,13 +403,23 @@ export function BatchReceiptForm({ onSuccess, onCancel }: BatchReceiptFormProps)
                   )}
                 </div>
 
-                {/* Thành tiền dòng */}
-                <div className="flex items-center justify-between text-xs text-slate-600 pt-1.5 border-t border-emerald-50 md:col-span-12 md:pt-1 md:mt-0">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                    <span className="hidden md:inline font-medium text-slate-600">Phân loại: {row.category}</span>
-                    <span className="md:hidden">Thành tiền:</span>
+                {/* Phân loại & Thành tiền dòng */}
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 pt-2 border-t border-emerald-50 md:col-span-12 md:pt-1.5 md:mt-0">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-[11px] font-semibold text-slate-500 whitespace-nowrap">Nhóm hàng:</span>
+                    <select
+                      value={row.category}
+                      onChange={(e) => handleUpdateItem(row.id, "category", e.target.value)}
+                      className="min-h-[36px] h-9 px-2 text-xs font-semibold rounded-xl border border-[#D8EFE9] bg-[#F4FBF9] text-slate-800 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200 cursor-pointer"
+                    >
+                      {DEFAULT_PURCHASE_CATEGORIES.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0 ml-auto">
                     <span className="text-xs text-slate-500">Thành tiền:</span>
                     <span className="font-mono tabular-nums font-extrabold text-emerald-700 text-sm">
                       {formatVND(row.lineTotal)}

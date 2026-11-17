@@ -6,12 +6,12 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get("q");
 
-    // 1. Chế độ tìm kiếm gợi ý tức thì
-    if (query !== null) {
+    // 1. Chế độ tìm kiếm gợi ý tức thì (Auto-Complete Suggestions)
+    if (searchParams.has("q")) {
+      const q = searchParams.get("q") || "";
       const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!, 10) : 10;
-      const suggestions = await SupplierService.searchSuppliers(query, limit);
+      const suggestions = await SupplierService.searchSuppliers(q, limit);
 
       return NextResponse.json({
         success: true,
@@ -21,12 +21,13 @@ export async function GET(request: Request) {
       });
     }
 
-    // 2. Chế độ phân trang đầy đủ
+    // 2. Chế độ phân trang đầy đủ (hỗ trợ cả tìm kiếm query và lọc category)
+    const query = searchParams.get("query") || searchParams.get("search") || undefined;
     const category = searchParams.get("category") || undefined;
     const page = searchParams.get("page") ? parseInt(searchParams.get("page")!, 10) : 1;
-    const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!, 10) : 50;
+    const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!, 10) : 100;
 
-    const result = await SupplierService.getSuppliers({ category, page, limit });
+    const result = await SupplierService.getSuppliers({ category, query, page, limit });
 
     return NextResponse.json({
       success: true,

@@ -184,6 +184,10 @@ export class PurchaseService {
     const purchase = await PurchaseLog.findById(id);
     if (!purchase) return null;
 
+    if ((purchase.editCount || 0) >= 1) {
+      throw new Error("Phiếu mua hàng đã được chỉnh sửa 1 lần trước đó. Sổ chỉ cho phép chỉnh sửa tối đa 1 lần duy nhất.");
+    }
+
     if (data.supplier !== undefined) {
       purchase.supplier = data.supplier.trim();
       if (purchase.supplier) {
@@ -239,6 +243,9 @@ export class PurchaseService {
         });
       }
     }
+
+    purchase.editCount = (purchase.editCount || 0) + 1;
+    purchase.editedAt = new Date();
 
     await purchase.save();
     return purchase;

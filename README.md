@@ -90,6 +90,7 @@ Hệ thống được thiết kế theo phong cách **Fresh & Free (Tươi Sáng
    - `name`, `normalizedName` (indexed), `category`, `defaultUnit`, `lastUnitPrice`, `minUnitPrice`, `maxUnitPrice`, `usageCount`.
 4. **`PurchaseLog` (`purchase-log.model.ts`)**: Lưu phiếu nhập hàng:
    - `code` (unique), `purchaseDate`, `dateKey` (`YYYY-MM-DD` giờ VN), `supplier`, `paymentMethod` (`CASH` | `TRANSFER`), `items` (`name`, `category`, `unit`, `quantity`, `unitPrice`, `lineTotal`, `note`), `totalAmount`, `itemCount`, `note`.
+   - **Khóa Sửa 1 Lần Duy Nhất**: `editCount` (Number, mặc định 0, tối đa 1), `editedAt` (Date). Khi `editCount >= 1`, backend từ chối mọi yêu cầu chỉnh sửa tiếp theo với HTTP 400 và UI vô hiệu hóa nút sửa kèm nhãn `Đã sửa (1/1)`.
 5. **`BankTransaction` (`bank-transaction.model.ts`)**: Lưu biến động số dư MB Bank:
    - `transactionRef` (unique indexed), `bankName`, `accountNumber`, `type` (`IN` | `OUT`), `amount`, `balanceAfter`, `senderName`, `content`, `transactionDate`, `dateKey`, `rawNotification`, `source`.
 
@@ -99,14 +100,16 @@ Hệ thống được thiết kế theo phong cách **Fresh & Free (Tươi Sáng
 
 - `POST /api/purchases`: Tạo đợt nhập hàng mới (sinh mã nguyên tử `PO-YYYYMMDD-XXX`, tự động học Catalog & Nơi mua).
 - `GET /api/purchases`: Tra cứu lịch sử theo ngày, khoảng ngày hoặc từ khóa không dấu.
-- `GET /api/purchases/[id]` & `PUT`, `DELETE`: Xem, sửa và xóa phiếu.
-- `GET /api/suppliers`: Danh sách nơi mua, gợi ý autocomplete tức thì theo từ khóa không dấu (`/api/suppliers?query=...`).
+- `GET /api/purchases/[id]`: Xem chi tiết phiếu nhập hàng.
+- `PUT /api/purchases/[id]`: Chỉnh sửa phiếu (áp dụng giới hạn nghiêm ngặt **chỉ sửa 1 lần duy nhất**, lưu `editCount` và `editedAt`).
+- `DELETE /api/purchases/[id]`: Xóa phiếu nhập hàng (kèm modal xác nhận xóa Fresh & Free `ConfirmDeleteModal`).
+- `GET /api/suppliers`: Danh sách nơi mua, hỗ trợ cả tìm kiếm tức thì `?q=...` và phân trang đầy đủ `?query=...` hoặc `?category=...`.
 - `POST /api/suppliers` & `PUT`, `DELETE`: Quản lý nơi mua thủ công hoặc tự động.
 - `GET /api/catalog`: Tìm kiếm gợi ý tức thì (`?q=...`), lấy danh sách đơn vị đo tùy chỉnh (`?units=true`).
 - `GET /api/catalog?seed=true`: Nạp nhanh 17 mặt hàng mẫu ngành F&B / Quán Cà phê.
 - `POST /api/catalog` & `PUT`, `DELETE`: Thao tác CRUD danh mục mặt hàng.
 - `GET /api/reports`: Báo cáo KPI, lọc theo tháng `YYYY-MM` an toàn tuyệt đối lệch múi giờ, biểu đồ chi tiêu ngày, cơ cấu nhóm hàng và Top chi tiêu.
-- `GET /api/export/excel`: Xuất file Excel `.xlsx` tự động căn độ rộng cột (`wch`) vừa vặn, kèm dòng TỔNG CỘNG.
+- `GET /api/export/excel`: Xuất file Excel `.xlsx` tự động căn độ rộng cột (`wch`), hỗ trợ bộ lọc theo ngày (`dateKey`), theo tuần/khoảng ngày (`startDateKey` & `endDateKey`), theo tháng (`month`). Tự động tách từng ngày riêng bằng dòng trống, có dòng **TỔNG NGÀY** riêng biệt và dòng **TỔNG CỘNG TOÀN KỲ** ở cuối.
 - `GET /api/export/csv`: Xuất bảng tính CSV với UTF-8 BOM (`\uFEFF`).
 - `GET /api/export/backup`: Tải file JSON sao lưu toàn bộ dữ liệu (kèm danh sách Nơi mua).
 - `POST /api/export/backup`: Khôi phục dữ liệu theo cơ chế Merge/Upsert an toàn (Choice A).
@@ -123,16 +126,16 @@ Hệ thống được thiết kế theo phong cách **Fresh & Free (Tươi Sáng
 - **Desktop / Laptop ($\ge 1024\text{px}$)**:
   - Form nhập hàng hiển thị dạng **Centered Dialog Modal rộng rãi (`max-w-4xl`)**:
     - **Ghi lẻ 1 món**: 2 cột cân đối (Cột trái: Thời gian, Mặt hàng, Nhóm hàng, Nơi mua; Cột phải: Đơn vị tính, Số lượng, Đơn giá, Thanh toán).
-    - **Ghi theo hóa đơn**: Bảng nhập nhanh dạng Spreadsheet (STT, Tên món, Đơn vị, SL, Đơn giá, Thành tiền, Xóa) kèm Nơi mua chung của hóa đơn ở trên.
+    - **Ghi theo hóa đơn**: Bảng nhập nhanh dạng Spreadsheet (STT, Tên món, Phân loại nhóm hàng từng dòng, Đơn vị, SL, Đơn giá, Thành tiền, Xóa) kèm Nơi mua chung của hóa đơn ở trên.
 - **Mobile Galaxy A35 5G ($< 1024\text{px}$)**:
   - Bottom Sheet vuốt chạm mượt mà, chiều cao nút $\ge 44\text{px}$, font chữ input $\ge 16\text{px}$ chống auto-zoom.
 
 ### 6.2. Năm Màn Hình Quản Trị Cốt Lõi
-1. **Trang 1: Hôm nay (`/`)**: 3 Bento KPI cards, danh sách chi tiết các đợt mua trong ngày, xóa nhanh, empty state.
-2. **Trang 2: Sổ theo ngày (`/history`)**: Bộ lọc thời gian (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tất cả), tìm kiếm tức thì không dấu, gom nhóm Accordion theo ngày.
-3. **Trang 3: Mặt hàng & Nơi mua (`/catalog`)**: 2 tab chuyển đổi tiện lợi để quản lý Mặt hàng và Nơi mua/Nhà cung cấp.
-4. **Trang 4: Báo cáo & Xuất Excel (`/reports`)**: Thanh điều hướng tháng (`< Tháng trước`, `Tháng sau >`, bộ chọn `YYYY-MM`), `AbortController` chống race condition, tải trực tiếp file `.xlsx` tự căn cột.
-5. **Trang 5: MB Bank Tracker & VietQR (`/mb-bank`)**: 3 KPI Tiền vào hôm nay, tháng này, số dư MB Bank, tự động làm mới mỗi 10 giây, mã VietQR nhận tiền tại quầy, Modal giả lập 1 chạm và Hướng dẫn kết nối 2 phút.
+1. **Trang 1: Hôm nay (`/`)**: 3 Bento KPI cards, danh sách chi tiết các đợt mua trong ngày, nút Sửa phiếu (chỉ 1 lần), nút Xóa phiếu với `ConfirmDeleteModal`, empty state tươi sáng.
+2. **Trang 2: Sổ theo ngày (`/history`)**: Bộ lọc thời gian (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tất cả), tìm kiếm tức thì không dấu, gom nhóm Accordion theo ngày, hỗ trợ sửa và xóa phiếu an toàn.
+3. **Trang 3: Mặt hàng & Nơi mua (`/catalog`)**: 2 tab chuyển đổi hiển thị số lượng chính xác ngay từ đầu (`Mặt hàng (X)` và `Nơi mua (Y)`), nạp song song, quản lý phân loại và đơn vị đo tùy chỉnh.
+4. **Trang 4: Báo cáo & Xuất Excel (`/reports`)**: Thanh điều hướng tháng (`< Tháng trước`, `Tháng sau >`, bộ chọn `YYYY-MM`), `AbortController` chống race condition, bộ lọc xuất Excel chuyên nghiệp (`ExcelExportFilterModal`) theo ngày, tuần, tháng và khoảng tùy chọn.
+5. **Trang 5: MB Bank Tracker & VietQR (`/mb-bank`)**: 3 KPI Tiền vào hôm nay, tháng này, số dư MB Bank, tự động làm mới mỗi 10 giây, mã VietQR nhận tiền tại quầy, Modal giả lập 1 chạm, `ConfirmDeleteModal` khi xóa giao dịch và Hướng dẫn kết nối 2 phút.
 
 ---
 

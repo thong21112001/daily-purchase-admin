@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
+import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import { useToast } from "@/components/ui/Toast";
 import { formatVND, parseVND } from "@/lib/utils/currency";
@@ -75,6 +76,10 @@ function CatalogContent() {
   const [formItemPrice, setFormItemPrice] = useState("");
   const [isItemSubmitting, setIsItemSubmitting] = useState(false);
 
+  // Total Counts for Tabs (luôn hiển thị chuẩn từ đầu)
+  const [totalItemsCount, setTotalItemsCount] = useState<number>(0);
+  const [totalSuppliersCount, setTotalSuppliersCount] = useState<number>(0);
+
   // Suppliers State
   const [suppliers, setSuppliers] = useState<SupplierData[]>([]);
   const [supplierSearchQuery, setSupplierSearchQuery] = useState("");
@@ -87,6 +92,30 @@ function CatalogContent() {
   const [formSupplierCategory, setFormSupplierCategory] = useState("Chợ");
   const [formSupplierNote, setFormSupplierNote] = useState("");
   const [isSupplierSubmitting, setIsSupplierSubmitting] = useState(false);
+
+  // Delete State
+  const [deleteItemTarget, setDeleteItemTarget] = useState<CatalogItemData | null>(null);
+  const [deleteSupplierTarget, setDeleteSupplierTarget] = useState<SupplierData | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Tải tổng số lượng cho 2 tab
+  const fetchTotalCounts = useCallback(async () => {
+    try {
+      const [itemsRes, suppliersRes] = await Promise.all([
+        fetch("/api/catalog?limit=1"),
+        fetch("/api/suppliers?limit=1"),
+      ]);
+      const [itemsJson, suppliersJson] = await Promise.all([itemsRes.json(), suppliersRes.json()]);
+      if (itemsJson.success && itemsJson.pagination?.totalCount !== undefined) {
+        setTotalItemsCount(itemsJson.pagination.totalCount);
+      }
+      if (suppliersJson.success && suppliersJson.pagination?.totalCount !== undefined) {
+        setTotalSuppliersCount(suppliersJson.pagination.totalCount);
+      }
+    } catch {
+      // Bỏ qua lỗi ngầm
+    }
+  }, []);
 
   // Load Catalog Items
   const loadCatalog = useCallback(async () => {
@@ -106,6 +135,9 @@ function CatalogContent() {
       const json = await res.json();
       if (json.success) {
         setItems(json.data || []);
+        if (!itemSearchQuery.trim() && selectedCategory === "Tất cả" && json.pagination?.totalCount !== undefined) {
+          setTotalItemsCount(json.pagination.totalCount);
+        }
       }
     } catch {
       showToast("Không thể tải danh mục mặt hàng", "error");
@@ -122,10 +154,14 @@ function CatalogContent() {
       if (supplierSearchQuery.trim()) {
         params.set("query", supplierSearchQuery.trim());
       }
+      params.set("limit", "100");
       const res = await fetch(`/api/suppliers?${params.toString()}`);
       const json = await res.json();
       if (json.success) {
         setSuppliers(json.data || []);
+        if (!supplierSearchQuery.trim() && json.pagination?.totalCount !== undefined) {
+          setTotalSuppliersCount(json.pagination.totalCount);
+        }
       }
     } catch {
       showToast("Không thể tải danh sách nơi mua", "error");
@@ -134,19 +170,28 @@ function CatalogContent() {
     }
   }, [supplierSearchQuery, showToast]);
 
+  // Load ban đầu cho CẢ HAI tab ngay khi mount để số lượng luôn chính xác
   useEffect(() => {
-    if (activeTab === "items") {
-      const timer = setTimeout(() => {
-        loadCatalog();
-      }, 200);
-      return () => clearTimeout(timer);
-    } else {
-      const timer = setTimeout(() => {
-        loadSuppliers();
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [activeTab, loadCatalog, loadSuppliers]);
+    fetchTotalCounts();
+    loadCatalog();
+    loadSuppliers();
+  }, [fetchTotalCounts, loadCatalog, loadSuppliers]);
+
+  // Debounced search cho Mặt hàng
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadCatalog();
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [loadCatalog]);
+
+  // Debounced search cho Nơi mua
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadSuppliers();
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [loadSuppliers]);
 
   // Handlers for Items
   const handleOpenAddItemModal = () => {
@@ -208,6 +253,7 @@ function CatalogContent() {
         showToast(editingItem ? "Đã cập nhật mặt hàng" : "Đã thêm mặt hàng mới", "success");
         setIsItemModalOpen(false);
         loadCatalog();
+        fetchTotalCounts();
       } else {
         showToast(json.message || "Lưu thất bại", "error");
       }
@@ -218,32 +264,36 @@ function CatalogContent() {
     }
   };
 
-  const handleDeleteItem = async (id: string, name: string) => {
-    if (!confirm(`Bạn có chắc muốn xóa mặt hàng [${name}] khỏi danh mục không?`)) return;
+  const handleConfirmDeleteItem = async () => {
+    if (!deleteItemTarget) return;
 
+    setIsDeleting(true);
     try {
-      const res = await fetch(`/api/catalog/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/catalog/${deleteItemTarget._id}`, { method: "DELETE" });
       const json = await res.json();
       if (json.success) {
-        showToast(`Đã xóa ${name}`, "success");
+        showToast(`Đã xóa ${deleteItemTarget.name}`, "success");
+        setDeleteItemTarget(null);
         loadCatalog();
+        fetchTotalCounts();
       } else {
         showToast(json.message || "Xóa thất bại", "error");
       }
     } catch {
       showToast("Lỗi kết nối khi xóa", "error");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   const handleSeedStarters = async () => {
-    if (!confirm("Bạn muốn nạp bộ 17 mặt hàng mẫu thông dụng của Quán Cà phê & Đồ uống?")) return;
-
     try {
       const res = await fetch("/api/catalog?seed=true");
       const json = await res.json();
       if (json.success) {
         showToast(json.message || "Đã nạp danh mục mẫu", "success");
         loadCatalog();
+        fetchTotalCounts();
       }
     } catch {
       showToast("Lỗi kết nối khi nạp danh mục mẫu", "error");
@@ -302,6 +352,7 @@ function CatalogContent() {
         showToast(editingSupplier ? "Đã cập nhật nơi mua" : "Đã thêm nơi mua mới", "success");
         setIsSupplierModalOpen(false);
         loadSuppliers();
+        fetchTotalCounts();
       } else {
         showToast(json.message || "Lưu thất bại", "error");
       }
@@ -312,20 +363,25 @@ function CatalogContent() {
     }
   };
 
-  const handleDeleteSupplier = async (id: string, name: string) => {
-    if (!confirm(`Bạn có chắc muốn xóa nơi mua [${name}] không?`)) return;
+  const handleConfirmDeleteSupplier = async () => {
+    if (!deleteSupplierTarget) return;
 
+    setIsDeleting(true);
     try {
-      const res = await fetch(`/api/suppliers/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/suppliers/${deleteSupplierTarget._id}`, { method: "DELETE" });
       const json = await res.json();
       if (json.success) {
-        showToast(`Đã xóa nơi mua ${name}`, "success");
+        showToast(`Đã xóa nơi mua ${deleteSupplierTarget.name}`, "success");
+        setDeleteSupplierTarget(null);
         loadSuppliers();
+        fetchTotalCounts();
       } else {
         showToast(json.message || "Xóa thất bại", "error");
       }
     } catch {
       showToast("Lỗi kết nối khi xóa", "error");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -354,7 +410,7 @@ function CatalogContent() {
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Mặt hàng ({items.length})
+              Mặt hàng ({totalItemsCount || items.length})
             </button>
             <button
               type="button"
@@ -365,7 +421,7 @@ function CatalogContent() {
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Nơi mua ({suppliers.length})
+              Nơi mua ({totalSuppliersCount || suppliers.length})
             </button>
           </div>
 
@@ -526,7 +582,7 @@ function CatalogContent() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDeleteItem(item._id, item.name)}
+                        onClick={() => setDeleteItemTarget(item)}
                         className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
                         title="Xóa mặt hàng"
                       >
@@ -638,7 +694,7 @@ function CatalogContent() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDeleteSupplier(sup._id, sup.name)}
+                      onClick={() => setDeleteSupplierTarget(sup)}
                       className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
                       title="Xóa nơi mua"
                     >
@@ -812,6 +868,34 @@ function CatalogContent() {
           </div>
         </form>
       </Modal>
+
+      {/* Confirm Delete Modals */}
+      <ConfirmDeleteModal
+        isOpen={!!deleteItemTarget}
+        onClose={() => setDeleteItemTarget(null)}
+        onConfirm={handleConfirmDeleteItem}
+        itemName={deleteItemTarget ? `Mặt hàng: ${deleteItemTarget.name}` : ""}
+        itemAmount={deleteItemTarget?.lastUnitPrice}
+        itemDetails={
+          deleteItemTarget
+            ? `Nhóm: ${deleteItemTarget.category} • Đơn vị: ${deleteItemTarget.defaultUnit} • Đã mua: ${deleteItemTarget.usageCount} lần`
+            : undefined
+        }
+        isLoading={isDeleting}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={!!deleteSupplierTarget}
+        onClose={() => setDeleteSupplierTarget(null)}
+        onConfirm={handleConfirmDeleteSupplier}
+        itemName={deleteSupplierTarget ? `Nơi mua: ${deleteSupplierTarget.name}` : ""}
+        itemDetails={
+          deleteSupplierTarget
+            ? `Phân loại: ${deleteSupplierTarget.category || "Khác"} • Đã mua: ${deleteSupplierTarget.usageCount} lần`
+            : undefined
+        }
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

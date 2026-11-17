@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
+import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
 import { useToast } from "@/components/ui/Toast";
 import { formatVND, parseVND } from "@/lib/utils/currency";
 import {
@@ -85,7 +86,8 @@ function MBBankContent() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [filterType, setFilterType] = useState<"ALL" | "IN" | "OUT">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<BankTxItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // VietQR State
   const defaultAccNo = process.env.NEXT_PUBLIC_MBBANK_ACCOUNT_NO || "0905123456";
@@ -161,15 +163,16 @@ function MBBankContent() {
     };
   }, [fetchData]);
 
-  const handleDelete = async (id: string, ref: string) => {
-    if (!confirm(`Bạn có chắc muốn xóa bản ghi giao dịch [${ref}]?`)) return;
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
 
-    setDeletingId(id);
+    setIsDeleting(true);
     try {
-      const res = await fetch(`/api/mbbank/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/mbbank/${deleteTarget._id}`, { method: "DELETE" });
       const json = await res.json();
       if (json.success) {
         showToast("Đã xóa giao dịch thành công", "success");
+        setDeleteTarget(null);
         fetchData();
       } else {
         showToast(json.message || "Xóa thất bại", "error");
@@ -177,7 +180,7 @@ function MBBankContent() {
     } catch {
       showToast("Lỗi kết nối khi xóa giao dịch", "error");
     } finally {
-      setDeletingId(null);
+      setIsDeleting(false);
     }
   };
 
@@ -463,7 +466,6 @@ function MBBankContent() {
       ) : (
         <div className="space-y-2.5">
           {transactions.map((tx) => {
-            const isDeleting = deletingId === tx._id;
             const isIncome = tx.type === "IN";
             const dateObj = new Date(tx.transactionDate);
             const timeStr = dateObj.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
@@ -536,7 +538,7 @@ function MBBankContent() {
                     variant="ghost"
                     size="sm"
                     disabled={isDeleting}
-                    onClick={() => handleDelete(tx._id, tx.transactionRef)}
+                    onClick={() => setDeleteTarget(tx)}
                     className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50 shrink-0"
                     title="Xóa bản ghi"
                   >
@@ -761,6 +763,17 @@ function MBBankContent() {
           </div>
         </div>
       </Modal>
+
+      {/* Confirm Delete Modal */}
+      <ConfirmDeleteModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+        itemName={deleteTarget ? `Giao dịch ${deleteTarget.transactionRef}` : ""}
+        itemAmount={deleteTarget?.amount}
+        itemDetails={deleteTarget?.content}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

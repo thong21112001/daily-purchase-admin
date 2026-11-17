@@ -66,14 +66,15 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
+    const status = error.message?.includes("1 lần") ? 400 : 500;
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: status,
         message: error.message || "Lỗi khi cập nhật phiếu mua hàng",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status }
     );
   }
 }

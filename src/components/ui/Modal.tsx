@@ -11,9 +11,10 @@ export interface ModalProps {
   description?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  maxWidth?: string;
 }
 
-export function Modal({ isOpen, onClose, title, description, children, className }: ModalProps) {
+export function Modal({ isOpen, onClose, title, description, children, className, maxWidth }: ModalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -38,7 +39,8 @@ export function Modal({ isOpen, onClose, title, description, children, className
       {/* Modal Dialog */}
       <div
         className={cn(
-          "relative z-50 w-full max-w-lg md:max-w-2xl bg-white border border-[#D8EFE9] rounded-2xl p-4 sm:p-6 shadow-2xl animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto",
+          "relative z-50 w-full bg-white border border-[#D8EFE9] rounded-2xl p-4 sm:p-6 shadow-2xl animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto",
+          maxWidth || "max-w-lg md:max-w-2xl",
           className
         )}
       >

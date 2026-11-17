@@ -90,6 +90,7 @@ The application embraces a **Fresh & Free (Bright, Liberating, Crisp)** aestheti
    - `name`, `normalizedName` (indexed), `category`, `defaultUnit`, `lastUnitPrice`, `minUnitPrice`, `maxUnitPrice`, `usageCount`.
 4. **`PurchaseLog` (`purchase-log.model.ts`)**: Purchase records:
    - `code` (unique), `purchaseDate`, `dateKey` (`YYYY-MM-DD` in VN timezone), `supplier`, `paymentMethod` (`CASH` | `TRANSFER`), `items`, `totalAmount`, `itemCount`, `note`.
+   - **Strict 1-Time Edit Lock**: `editCount` (Number, default 0, max 1), `editedAt` (Date). When `editCount >= 1`, backend rejects any further edit attempts with HTTP 400 and the UI disables the edit button with a badge `Đã sửa (1/1)`.
 5. **`BankTransaction` (`bank-transaction.model.ts`)**: MB Bank balance transactions:
    - `transactionRef` (unique indexed), `bankName`, `accountNumber`, `type` (`IN` | `OUT`), `amount`, `balanceAfter`, `senderName`, `content`, `transactionDate`, `dateKey`, `rawNotification`, `source`.
 
@@ -99,14 +100,16 @@ The application embraces a **Fresh & Free (Bright, Liberating, Crisp)** aestheti
 
 - `POST /api/purchases`: Creates new purchase record, increments sequential code, auto-learns catalog & supplier.
 - `GET /api/purchases`: Queries history by dateKey, date range, or unaccented keyword search.
-- `GET /api/purchases/[id]` & `PUT`, `DELETE`: Views, updates, or deletes purchase records.
-- `GET /api/suppliers`: Lists suppliers with instant unaccented autocomplete (`/api/suppliers?query=...`).
+- `GET /api/purchases/[id]`: Views purchase record details.
+- `PUT /api/purchases/[id]`: Updates purchase record (enforces strict **1-time edit limit**, tracking `editCount` and `editedAt`).
+- `DELETE /api/purchases/[id]`: Deletes purchase records (paired with Fresh & Free `ConfirmDeleteModal`).
+- `GET /api/suppliers`: Lists suppliers with support for both instant autocomplete (`?q=...`) and paginated search (`?query=...` or `?category=...`).
 - `POST /api/suppliers` & `PUT`, `DELETE`: Manages suppliers manually or automatically.
 - `GET /api/catalog`: Instant item suggestions (`?q=...`), dynamic custom units list (`?units=true`).
 - `GET /api/catalog?seed=true`: Seeds 17 common F&B starter supplies.
 - `POST /api/catalog` & `PUT`, `DELETE`: Catalog CRUD operations.
 - `GET /api/reports`: Aggregates monthly KPIs using safe string intervals `YYYY-MM-01` to `YYYY-MM-31`, daily trend, category breakdown, top spending items.
-- `GET /api/export/excel`: Exports genuine `.xlsx` workbook with auto-fit column widths and grand total summary row.
+- `GET /api/export/excel`: Exports genuine `.xlsx` workbook with auto-fit column widths, supporting filters by day (`dateKey`), by week/custom range (`startDateKey` & `endDateKey`), and by month (`month`). Features day-by-day blank row separation, per-day **TỔNG NGÀY** subtotal rows, and an overall **TỔNG CỘNG TOÀN KỲ** grand total row.
 - `GET /api/export/csv`: Exports CSV with UTF-8 BOM (`\uFEFF`).
 - `GET /api/export/backup`: Generates complete JSON database backup (including suppliers).
 - `POST /api/export/backup`: Restores data via safe Merge/Upsert strategy (Choice A).
@@ -120,15 +123,15 @@ The application embraces a **Fresh & Free (Bright, Liberating, Crisp)** aestheti
 ## 6. 📱 UI Architecture & Purchasing Entry Experience
 
 ### 6.1. Adaptive Layout
-- **Desktop / Laptop ($\ge 1024\text{px}$)**: Centered dialog modal (`max-w-4xl`) with 2 balanced columns (Single mode) and spreadsheet table view (Batch mode).
+- **Desktop / Laptop ($\ge 1024\text{px}$)**: Centered dialog modal (`max-w-4xl`) with 2 balanced columns (Single mode) and spreadsheet table view (Batch mode with per-row category selection).
 - **Mobile Galaxy A35 5G ($< 1024\text{px}$)**: Smooth bottom sheet drawer with $\ge 44\text{px}$ touch targets and $\ge 16\text{px}$ input font size.
 
 ### 6.2. Five Core Admin Pages
-1. **Today (`/`)**: 3 Bento KPI cards, daily transaction cards, quick deletion, empty state.
-2. **History (`/history`)**: Date filters (Today, Yesterday, 7 Days, This Month, All), unaccented search, Accordion grouping by date.
-3. **Catalog & Suppliers (`/catalog`)**: Convenient 2-tab interface managing Items and Suppliers.
-4. **Reports & Excel Export (`/reports`)**: Month navigation bar (`< Prev Month`, `Next Month >`, month picker `YYYY-MM`), `AbortController` against race conditions, direct `.xlsx` download.
-5. **MB Bank Tracker & VietQR (`/mb-bank`)**: Live 10s auto-polling, 3 KPI cards, dynamic countertop VietQR code, test simulator modal, and 2-minute setup guide.
+1. **Today (`/`)**: 3 Bento KPI cards, daily transaction cards, 1-time edit button, `ConfirmDeleteModal`, empty state.
+2. **History (`/history`)**: Date filters (Today, Yesterday, 7 Days, This Month, All), unaccented search, Accordion grouping by date, safe edit and delete actions.
+3. **Catalog & Suppliers (`/catalog`)**: 2-tab interface with accurate initial counts (`Mặt hàng (X)` and `Nơi mua (Y)`), parallel loading, custom unit management.
+4. **Reports & Excel Export (`/reports`)**: Month navigation bar (`< Prev Month`, `Next Month >`, month picker `YYYY-MM`), `AbortController` against race conditions, advanced `ExcelExportFilterModal` (Day / Week / Month / Custom Range).
+5. **MB Bank Tracker & VietQR (`/mb-bank`)**: Live 10s auto-polling, 3 KPI cards, dynamic countertop VietQR code, test simulator modal, `ConfirmDeleteModal` on deletions, and 2-minute setup guide.
 
 ---
 

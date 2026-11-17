@@ -8,15 +8,35 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
 
+    const dateKey = searchParams.get("dateKey") || undefined;
     const startDateKey = searchParams.get("startDateKey") || undefined;
     const endDateKey = searchParams.get("endDateKey") || undefined;
-    const month = searchParams.get("month") || getMonthKey();
+    const month = searchParams.get("month") || undefined;
 
-    const excelBuffer = await ExportService.generatePurchaseExcel(startDateKey, endDateKey, month);
+    let start = startDateKey;
+    let end = endDateKey;
+    let filename = "";
 
-    const filename = `so-nhap-hang-${
-      startDateKey && endDateKey ? `${startDateKey}_den_${endDateKey}` : month
-    }.xlsx`;
+    if (dateKey) {
+      start = dateKey;
+      end = dateKey;
+      filename = `so-nhap-hang-ngay-${dateKey}.xlsx`;
+    } else if (startDateKey && endDateKey) {
+      start = startDateKey;
+      end = endDateKey;
+      filename = `so-nhap-hang-${startDateKey}_den_${endDateKey}.xlsx`;
+    } else if (month) {
+      start = `${month}-01`;
+      end = `${month}-31`;
+      filename = `so-nhap-hang-thang-${month}.xlsx`;
+    } else {
+      const currentMonth = getMonthKey();
+      start = `${currentMonth}-01`;
+      end = `${currentMonth}-31`;
+      filename = `so-nhap-hang-thang-${currentMonth}.xlsx`;
+    }
+
+    const excelBuffer = await ExportService.generatePurchaseExcel(start, end);
 
     return new NextResponse(new Uint8Array(excelBuffer), {
       status: 200,

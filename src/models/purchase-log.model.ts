@@ -29,6 +29,8 @@ export interface IPurchaseLog extends Document {
   totalAmount: number;
   itemCount: number;
   note?: string;
+  editCount: number;
+  editedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -135,6 +137,15 @@ const PurchaseLogSchema = new Schema<IPurchaseLog>(
       type: String,
       default: "",
       trim: true,
+    },
+    editCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    editedAt: {
+      type: Date,
+      default: null,
     },
   },
   {

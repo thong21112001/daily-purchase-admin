@@ -117,4 +117,39 @@ describe("Phase 2 Integration: Purchase Workflow & Auto-Learn Catalog", () => {
     assert.equal(step3.maxUnitPrice, 195000);
     assert.equal(step3.usageCount, 3);
   });
+
+  test("Strict 1-Time Edit Lock enforcement on purchase logs", () => {
+    // Mô phỏng logic updatePurchaseLog của PurchaseService
+    const purchase = {
+      _id: "p-001",
+      code: "PO-20261116-001",
+      totalAmount: 100000,
+      editCount: 0,
+      editedAt: null,
+    };
+
+    function simulateUpdatePurchase(record, newTotal) {
+      if ((record.editCount || 0) >= 1) {
+        throw new Error(
+          `Phiếu nhập hàng [${record.code}] đã được chỉnh sửa 1 lần (tối đa cho phép). Không thể chỉnh sửa thêm.`
+        );
+      }
+      record.totalAmount = newTotal;
+      record.editCount = (record.editCount || 0) + 1;
+      record.editedAt = new Date();
+      return record;
+    }
+
+    // Lần 1: Chỉnh sửa được phép
+    const updated = simulateUpdatePurchase(purchase, 120000);
+    assert.equal(updated.totalAmount, 120000);
+    assert.equal(updated.editCount, 1);
+    assert.ok(updated.editedAt instanceof Date);
+
+    // Lần 2: Cố tình chỉnh sửa tiếp -> Phải ném lỗi cấm sửa
+    assert.throws(
+      () => simulateUpdatePurchase(purchase, 150000),
+      /Phiếu nhập hàng .* đã được chỉnh sửa 1 lần \(tối đa cho phép\)/
+    );
+  });
 });

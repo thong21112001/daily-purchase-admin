@@ -18,8 +18,11 @@ import {
   Store,
   ArrowRight,
   TrendingUp,
+  Edit2,
 } from "lucide-react";
 import Link from "next/link";
+import { EditPurchaseModal } from "@/components/entry/EditPurchaseModal";
+import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
 
 interface PurchaseItem {
   _id?: string;
@@ -43,6 +46,8 @@ interface PurchaseRecord {
   totalAmount: number;
   itemCount: number;
   note?: string;
+  editCount?: number;
+  editedAt?: string;
   createdAt: string;
 }
 
@@ -59,7 +64,11 @@ function DashboardContent() {
   const [purchases, setPurchases] = useState<PurchaseRecord[]>([]);
   const [kpis, setKpis] = useState<DashboardKPIs | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Sửa & Xóa phiếu
+  const [editingPurchaseId, setEditingPurchaseId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PurchaseRecord | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const todayKey = getTodayKey();
 
@@ -94,17 +103,16 @@ function DashboardContent() {
     loadData();
   }, [loadData, refreshTick]);
 
-  const handleDelete = async (id: string, code: string) => {
-    if (!confirm(`Bạn có chắc muốn xóa đợt mua hàng ${code} không? Thao tác này không thể hoàn tác.`)) {
-      return;
-    }
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
 
-    setDeletingId(id);
+    setIsDeleting(true);
     try {
-      const res = await fetch(`/api/purchases/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/purchases/${deleteTarget._id}`, { method: "DELETE" });
       const json = await res.json();
       if (json.success) {
-        showToast(`Đã xóa thành công ${code}`, "success");
+        showToast(`Đã xóa thành công ${deleteTarget.code}`, "success");
+        setDeleteTarget(null);
         triggerRefresh();
         loadData();
       } else {
@@ -113,7 +121,7 @@ function DashboardContent() {
     } catch {
       showToast("Lỗi kết nối khi xóa phiếu", "error");
     } finally {
-      setDeletingId(null);
+      setIsDeleting(false);
     }
   };
 
@@ -239,7 +247,6 @@ function DashboardContent() {
         ) : (
           <div className="space-y-3">
             {purchases.map((purchase) => {
-              const isDeleting = deletingId === purchase._id;
               const timeString = new Date(purchase.purchaseDate).toLocaleTimeString("vi-VN", {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -285,16 +292,37 @@ function DashboardContent() {
                       </Badge>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-sm sm:text-base font-extrabold font-mono tabular-nums text-slate-900">
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-sm sm:text-base font-extrabold font-mono tabular-nums text-slate-900 mr-1">
                         {formatVND(purchase.totalAmount)}
                       </span>
+
+                      {(purchase.editCount || 0) >= 1 && (
+                        <Badge
+                          variant="outline"
+                          size="sm"
+                          className="text-[10px] py-0 px-1.5 text-amber-700 bg-amber-50 border-amber-200 shrink-0"
+                        >
+                          Đã sửa (1/1)
+                        </Badge>
+                      )}
+
                       <Button
                         variant="ghost"
                         size="sm"
-                        disabled={isDeleting}
-                        onClick={() => handleDelete(purchase._id, purchase.code)}
-                        className="h-9 w-9 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl"
+                        disabled={(purchase.editCount || 0) >= 1}
+                        onClick={() => setEditingPurchaseId(purchase._id)}
+                        className="h-8 w-8 p-0 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 disabled:opacity-40 disabled:hover:bg-transparent"
+                        title={(purchase.editCount || 0) >= 1 ? "Phiếu đã sửa 1 lần (tối đa cho phép)" : "Sửa phiếu (chỉ được sửa 1 lần)"}
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteTarget(purchase)}
+                        className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl"
                         title="Xóa phiếu này"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -352,6 +380,34 @@ function DashboardContent() {
           </div>
         )}
       </section>
+
+      {/* Modal Chỉnh Sửa Phiếu (Khóa 1 lần duy nhất) */}
+      <EditPurchaseModal
+        isOpen={!!editingPurchaseId}
+        onClose={() => setEditingPurchaseId(null)}
+        purchaseId={editingPurchaseId}
+        onSuccess={() => {
+          setEditingPurchaseId(null);
+          triggerRefresh();
+          loadData();
+        }}
+      />
+
+      {/* Modal Popup Xác Nhận Xóa Tùy Chỉnh */}
+      <ConfirmDeleteModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa đợt mua hàng"
+        itemName={deleteTarget?.code}
+        itemDetails={
+          deleteTarget
+            ? `${deleteTarget.items?.length || 0} mặt hàng • ${deleteTarget.supplier || "Không ghi nơi mua"}`
+            : undefined
+        }
+        itemAmount={deleteTarget?.totalAmount}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }
