@@ -377,51 +377,54 @@ export function EditPurchaseModal({
                     />
                   </div>
 
-                  {/* Số lượng */}
-                  <div className="col-span-4 md:col-span-2">
-                    <label className="block text-[10px] text-slate-500 mb-0.5 md:hidden">Số lượng</label>
-                    <input
-                      type="number"
-                      step="any"
-                      min="0.01"
-                      inputMode="decimal"
-                      value={row.quantity}
-                      onChange={(e) =>
-                        handleUpdateItem(row.id, "quantity", parseFloat(e.target.value) || 0)
-                      }
-                      className="w-full min-h-[44px] h-10 px-2 rounded-xl border border-[#D8EFE9] bg-[#F4FBF9] font-mono tabular-nums text-base text-center font-bold text-slate-900 focus:outline-hidden focus:border-emerald-500"
-                    />
-                  </div>
+                  {/* Mobile & Desktop inputs wrapper */}
+                  <div className="grid grid-cols-12 gap-2 md:contents">
+                    {/* Số lượng */}
+                    <div className="col-span-4 md:col-span-2">
+                      <label className="block text-[10px] text-slate-500 mb-0.5 md:hidden font-medium">Số lượng</label>
+                      <input
+                        type="number"
+                        step="any"
+                        min="0.01"
+                        inputMode="decimal"
+                        value={row.quantity}
+                        onChange={(e) =>
+                          handleUpdateItem(row.id, "quantity", parseFloat(e.target.value) || 0)
+                        }
+                        className="w-full min-h-[44px] h-10 px-2 rounded-xl border border-[#D8EFE9] bg-[#F4FBF9] font-mono tabular-nums text-base text-center font-bold text-slate-900 focus:outline-hidden focus:border-emerald-500 min-w-0"
+                      />
+                    </div>
 
-                  {/* Đơn vị */}
-                  <div className="col-span-4 md:col-span-2">
-                    <label className="block text-[10px] text-slate-500 mb-0.5 md:hidden">Đơn vị</label>
-                    <select
-                      value={row.unit}
-                      onChange={(e) => handleUpdateItem(row.id, "unit", e.target.value)}
-                      className="w-full min-h-[44px] h-10 px-1 rounded-xl border border-[#D8EFE9] bg-[#F4FBF9] text-base font-semibold text-slate-800 focus:outline-hidden focus:border-emerald-500"
-                    >
-                      {availableUnits.map((u) => (
-                        <option key={u} value={u}>
-                          {u}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                    {/* Đơn vị */}
+                    <div className="col-span-4 md:col-span-2">
+                      <label className="block text-[10px] text-slate-500 mb-0.5 md:hidden font-medium">Đơn vị</label>
+                      <select
+                        value={row.unit}
+                        onChange={(e) => handleUpdateItem(row.id, "unit", e.target.value)}
+                        className="w-full min-h-[44px] h-10 px-1 rounded-xl border border-[#D8EFE9] bg-[#F4FBF9] text-base font-semibold text-slate-800 focus:outline-hidden focus:border-emerald-500 min-w-0"
+                      >
+                        {availableUnits.map((u) => (
+                          <option key={u} value={u}>
+                            {u}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                  {/* Đơn giá */}
-                  <div className="col-span-4 md:col-span-2">
-                    <label className="block text-[10px] text-slate-500 mb-0.5 md:hidden">Đơn giá</label>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={row.unitPrice > 0 ? row.unitPrice.toLocaleString("vi-VN") : ""}
-                      onChange={(e) =>
-                        handleUpdateItem(row.id, "unitPrice", parseVND(e.target.value))
-                      }
-                      placeholder="0 ₫"
-                      className="w-full min-h-[44px] h-10 px-2 rounded-xl border border-[#D8EFE9] bg-[#F4FBF9] font-mono tabular-nums text-base text-right font-bold text-slate-900 focus:outline-hidden focus:border-emerald-500"
-                    />
+                    {/* Đơn giá */}
+                    <div className="col-span-4 md:col-span-2">
+                      <label className="block text-[10px] text-slate-500 mb-0.5 md:hidden font-medium">Đơn giá</label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={row.unitPrice > 0 ? row.unitPrice.toLocaleString("vi-VN") : ""}
+                        onChange={(e) =>
+                          handleUpdateItem(row.id, "unitPrice", parseVND(e.target.value))
+                        }
+                        placeholder="0 ₫"
+                        className="w-full min-h-[44px] h-10 px-2 rounded-xl border border-[#D8EFE9] bg-[#F4FBF9] font-mono tabular-nums text-base text-right font-bold text-slate-900 focus:outline-hidden focus:border-emerald-500 min-w-0"
+                      />
+                    </div>
                   </div>
 
                   {/* Xóa dòng trên Desktop */}

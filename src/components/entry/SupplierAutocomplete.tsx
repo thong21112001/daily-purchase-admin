@@ -31,14 +31,19 @@ export function SupplierAutocomplete({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isUserTypingRef = useRef(false);
 
   const fetchSuggestions = async (keyword: string) => {
+    if (!isUserTypingRef.current) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/suppliers?q=${encodeURIComponent(keyword)}&limit=8`);
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
         setResults(json.data);
+        if (isUserTypingRef.current && json.data.length > 0) {
+          setIsOpen(true);
+        }
       }
     } catch {
       // Fallback silent
@@ -49,8 +54,8 @@ export function SupplierAutocomplete({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
+    isUserTypingRef.current = true;
     onChange(val);
-    setIsOpen(true);
 
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     debounceTimerRef.current = setTimeout(() => {
@@ -58,20 +63,19 @@ export function SupplierAutocomplete({
     }, 180);
   };
 
-  const handleFocus = () => {
-    setIsOpen(true);
-    fetchSuggestions(value);
-  };
-
   const handleSelect = (item: SupplierItem) => {
+    isUserTypingRef.current = false;
     onChange(item.name);
     if (onSelectSupplier) onSelectSupplier(item);
     setIsOpen(false);
+    setResults([]);
   };
 
   const handleClear = () => {
+    isUserTypingRef.current = false;
     onChange("");
     setIsOpen(false);
+    setResults([]);
     if (inputRef.current) inputRef.current.focus();
   };
 
@@ -80,6 +84,7 @@ export function SupplierAutocomplete({
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
+        isUserTypingRef.current = false;
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -98,7 +103,6 @@ export function SupplierAutocomplete({
           type="text"
           value={value}
           onChange={handleInputChange}
-          onFocus={handleFocus}
           disabled={disabled}
           placeholder={placeholder}
           className="w-full min-h-[44px] h-11 pl-10 pr-16 rounded-xl border border-emerald-200 bg-white text-slate-900 text-base placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all shadow-xs"

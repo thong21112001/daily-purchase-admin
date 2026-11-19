@@ -29,23 +29,31 @@ export function ItemAutocomplete({
   const [, setLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isUserTypingRef = useRef(false);
 
-  // Lắng nghe khi gõ để gọi API gợi ý
+  // Chỉ gọi API gợi ý khi người dùng chủ động gõ phím, không tự bung khi nhận value từ props
   useEffect(() => {
-    const fetchSuggestions = async () => {
-      if (!value.trim()) {
-        setSuggestions([]);
-        setIsOpen(false);
-        return;
-      }
+    if (!isUserTypingRef.current) {
+      return;
+    }
 
+    if (!value.trim()) {
+      setSuggestions([]);
+      setIsOpen(false);
+      return;
+    }
+
+    const fetchSuggestions = async () => {
       setLoading(true);
       try {
         const res = await fetch(`/api/catalog?q=${encodeURIComponent(value.trim())}&limit=8`);
         const json = await res.json();
         if (json.success && Array.isArray(json.data)) {
           setSuggestions(json.data);
-          setIsOpen(json.data.length > 0);
+          // Chỉ mở dropdown nếu người dùng vẫn đang trong phiên gõ
+          if (isUserTypingRef.current && json.data.length > 0) {
+            setIsOpen(true);
+          }
         }
       } catch {
         setSuggestions([]);
@@ -63,6 +71,7 @@ export function ItemAutocomplete({
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
+        isUserTypingRef.current = false;
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -70,6 +79,7 @@ export function ItemAutocomplete({
   }, []);
 
   const handleSelect = (item: any) => {
+    isUserTypingRef.current = false;
     onChange(item.name);
     onSelectItem({
       name: item.name,
@@ -78,11 +88,14 @@ export function ItemAutocomplete({
       unitPrice: item.lastUnitPrice || 0,
     });
     setIsOpen(false);
+    setSuggestions([]);
   };
 
   const handleClear = () => {
+    isUserTypingRef.current = false;
     onChange("");
     setIsOpen(false);
+    setSuggestions([]);
     if (inputRef.current) inputRef.current.focus();
   };
 
@@ -94,11 +107,8 @@ export function ItemAutocomplete({
           type="text"
           value={value}
           onChange={(e) => {
+            isUserTypingRef.current = true;
             onChange(e.target.value);
-            setIsOpen(true);
-          }}
-          onFocus={() => {
-            if (suggestions.length > 0) setIsOpen(true);
           }}
           autoFocus={autoFocus}
           placeholder="Tên mặt hàng (VD: Cà phê, Sữa đặc, Chanh...)"

@@ -293,7 +293,7 @@ export function QuickSingleItemForm({ onSuccess, onCancel }: QuickSingleItemForm
             )}
 
             {/* Dãy Chip đơn vị */}
-            <div className="flex flex-wrap gap-1.5 pt-0.5 max-h-24 overflow-y-auto">
+            <div className="flex flex-wrap gap-1.5 pt-0.5 max-h-28 overflow-y-auto pr-1 no-scrollbar">
               {availableUnits.map((u) => (
                 <button
                   key={u}
@@ -324,7 +324,7 @@ export function QuickSingleItemForm({ onSuccess, onCancel }: QuickSingleItemForm
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
               Số lượng mua
             </label>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2 w-full min-w-0">
               <input
                 type="number"
                 step="any"
@@ -332,27 +332,30 @@ export function QuickSingleItemForm({ onSuccess, onCancel }: QuickSingleItemForm
                 inputMode="decimal"
                 value={quantity}
                 onChange={(e) => handleQtyChange(parseFloat(e.target.value) || 0)}
-                className="flex-1 min-h-[44px] h-11 px-3.5 rounded-xl border border-[#D8EFE9] bg-white text-slate-900 font-mono tabular-nums text-base font-bold text-center focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                className="w-24 sm:w-28 min-h-[44px] h-11 px-2.5 rounded-xl border border-[#D8EFE9] bg-white text-slate-900 font-mono tabular-nums text-base font-bold text-center shrink-0 min-w-0 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 shadow-xs"
               />
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
                   onClick={() => handleQtyChange(quantity - 1)}
-                  className="min-h-[44px] min-w-[44px] h-11 w-11 rounded-xl bg-white border border-[#D8EFE9] text-slate-700 font-bold text-base flex items-center justify-center active:scale-95 cursor-pointer shadow-xs hover:bg-emerald-50"
+                  className="min-h-[44px] min-w-[38px] sm:min-w-[44px] h-11 px-2 rounded-xl bg-white border border-[#D8EFE9] text-slate-700 font-bold text-sm flex items-center justify-center active:scale-95 cursor-pointer shadow-xs hover:bg-emerald-50"
+                  title="Giảm 1"
                 >
                   -1
                 </button>
                 <button
                   type="button"
                   onClick={() => handleQtyChange(quantity + 0.5)}
-                  className="min-h-[44px] h-11 px-3 rounded-xl bg-white border border-[#D8EFE9] text-slate-700 font-bold text-sm flex items-center justify-center active:scale-95 cursor-pointer shadow-xs hover:bg-emerald-50"
+                  className="min-h-[44px] min-w-[42px] sm:min-w-[46px] h-11 px-2 rounded-xl bg-white border border-[#D8EFE9] text-slate-700 font-bold text-xs flex items-center justify-center active:scale-95 cursor-pointer shadow-xs hover:bg-emerald-50"
+                  title="Tăng 0.5"
                 >
                   +0.5
                 </button>
                 <button
                   type="button"
                   onClick={() => handleQtyChange(quantity + 1)}
-                  className="min-h-[44px] min-w-[44px] h-11 w-11 rounded-xl bg-white border border-[#D8EFE9] text-slate-700 font-bold text-base flex items-center justify-center active:scale-95 cursor-pointer shadow-xs hover:bg-emerald-50"
+                  className="min-h-[44px] min-w-[38px] sm:min-w-[44px] h-11 px-2 rounded-xl bg-white border border-[#D8EFE9] text-slate-700 font-bold text-sm flex items-center justify-center active:scale-95 cursor-pointer shadow-xs hover:bg-emerald-50"
+                  title="Tăng 1"
                 >
                   +1
                 </button>

@@ -68,3 +68,14 @@ body {
   background: rgba(16, 185, 129, 0.45);
 }
 
+/* Ẩn spinner mặc định của input type="number" để tránh vỡ layout và tiết kiệm diện tích trên mobile */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+
