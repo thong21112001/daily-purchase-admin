@@ -81,3 +81,16 @@ export function getQuickAmountSuggestions(input: string | number): number[] {
 
   return [];
 }
+
+/**
+ * Chuyển đổi chuỗi nhập số lượng (hỗ trợ cả dấu chấm lẫn dấu phẩy tiếng Việt như 0.5, 0,5, 1,25)
+ */
+export function parseQuantity(input: string | number | null | undefined): number {
+  if (input === null || input === undefined) return 1;
+  if (typeof input === "number") return isNaN(input) || input <= 0 ? 0 : input;
+
+  const clean = String(input).trim().replace(/,/g, ".");
+  const val = parseFloat(clean);
+  return isNaN(val) || val <= 0 ? 0 : val;
+}
+

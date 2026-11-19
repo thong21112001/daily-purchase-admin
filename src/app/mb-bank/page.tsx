@@ -1,19 +1,19 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import Image from "next/image";
 import { AdminLayoutShell } from "@/components/layout/AdminLayoutShell";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Modal } from "@/components/ui/Modal";
 import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
 import { useToast } from "@/components/ui/Toast";
-import { formatVND, parseVND } from "@/lib/utils/currency";
+import { formatVND } from "@/lib/utils/currency";
+import { VietQrModal } from "@/components/mbbank/VietQrModal";
+import { BankSimulatorModal } from "@/components/mbbank/BankSimulatorModal";
+import { WebhookGuideModal } from "@/components/mbbank/WebhookGuideModal";
 import {
   CreditCard,
   TrendingUp,
-  Zap,
   RefreshCw,
   QrCode,
   Copy,
@@ -24,8 +24,6 @@ import {
   Play,
   ArrowDownLeft,
   ArrowUpRight,
-  ShieldCheck,
-  Send,
 } from "lucide-react";
 
 interface BankTxItem {
@@ -54,21 +52,6 @@ interface BankStats {
   lastUpdated?: string;
 }
 
-const SAMPLE_NOTIFICATIONS = [
-  {
-    title: "Khách trả tiền nước (35.000 ₫)",
-    text: "Thông báo biến động số dư: TK 0905123456|GD: +35,000VND 16/11/26 09:30 |SD: 12,500,000VND|ND: CA PHE SUA DA BAN 03",
-  },
-  {
-    title: "Bàn 4 thanh toán (120.000 ₫)",
-    text: "Thông báo biến động số dư: TK 0905123456|GD: +120,000VND 16/11/26 10:15 |SD: 12,620,000VND|ND: NGUYEN VAN A thanh toan ban 04",
-  },
-  {
-    title: "Chuyển tiền cọc sinh nhật (500.000 ₫)",
-    text: "Thông báo biến động số dư: TK 0905123456|GD: +500,000VND 16/11/26 11:00 |SD: 13,120,000VND|ND: LE THI B chuyen tien coc tiec sinh nhat",
-  },
-];
-
 function MBBankContent() {
   const { showToast } = useToast();
 
@@ -89,22 +72,16 @@ function MBBankContent() {
   const [deleteTarget, setDeleteTarget] = useState<BankTxItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // VietQR State
+  // VietQR & Accounts
   const defaultAccNo = process.env.NEXT_PUBLIC_MBBANK_ACCOUNT_NO || "0905123456";
   const defaultAccName = process.env.NEXT_PUBLIC_MBBANK_ACCOUNT_NAME || "QUAN CA PHE";
-  const [qrAmount, setQrAmount] = useState("");
-  const [qrNote, setQrNote] = useState("Thanh toan tien cafe");
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [isCopiedAcc, setIsCopiedAcc] = useState(false);
 
-  // Simulator Modal State
+  // Simulator & Guide Modals
   const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
-  const [simText, setSimText] = useState(SAMPLE_NOTIFICATIONS[0].text);
   const [isSimulating, setIsSimulating] = useState(false);
-
-  // Guide Modal State
   const [isGuideOpen, setIsGuideOpen] = useState(false);
-  const [isCopiedWebhook, setIsCopiedWebhook] = useState(false);
 
   // Fetch Data
   const fetchData = useCallback(
@@ -113,14 +90,12 @@ function MBBankContent() {
       else setIsRefreshing(true);
 
       try {
-        // 1. Fetch Stats
         const statsRes = await fetch("/api/mbbank?stats=true");
         const statsJson = await statsRes.json();
         if (statsJson.success) {
           setStats(statsJson.data);
         }
 
-        // 2. Fetch Transactions
         const params = new URLSearchParams();
         if (filterType !== "ALL") params.set("type", filterType);
         if (searchQuery.trim()) params.set("query", searchQuery.trim());
@@ -143,7 +118,6 @@ function MBBankContent() {
     [filterType, searchQuery, showToast]
   );
 
-  // Initial load & search debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchData();
@@ -151,7 +125,7 @@ function MBBankContent() {
     return () => clearTimeout(timer);
   }, [fetchData]);
 
-  // 10-second Auto Polling
+  // 10s Polling
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
     pollTimerRef.current = setInterval(() => {
@@ -184,8 +158,8 @@ function MBBankContent() {
     }
   };
 
-  const handleSimulateSend = async () => {
-    if (!simText.trim()) {
+  const handleSimulateSend = async (text: string) => {
+    if (!text.trim()) {
       showToast("Vui lòng nhập nội dung thông báo giả lập", "error");
       return;
     }
@@ -195,7 +169,7 @@ function MBBankContent() {
       const res = await fetch("/api/mbbank", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rawNotification: simText.trim() }),
+        body: JSON.stringify({ rawNotification: text.trim() }),
       });
 
       const json = await res.json();
@@ -222,19 +196,6 @@ function MBBankContent() {
 
   const currentOrigin = typeof window !== "undefined" ? window.location.origin : "https://your-domain.vercel.app";
   const webhookUrl = `${currentOrigin}/api/webhooks/mbbank`;
-
-  const handleCopyWebhook = () => {
-    navigator.clipboard.writeText(webhookUrl);
-    setIsCopiedWebhook(true);
-    showToast("Đã sao chép địa chỉ Webhook", "success");
-    setTimeout(() => setIsCopiedWebhook(false), 2000);
-  };
-
-  // Generate VietQR URL
-  const qrAmountNum = qrAmount ? parseVND(qrAmount) : 0;
-  const vietQrUrl = `https://img.vietqr.io/image/970422-${defaultAccNo}-compact2.png?amount=${qrAmountNum}&addInfo=${encodeURIComponent(
-    qrNote
-  )}&accountName=${encodeURIComponent(defaultAccName)}`;
 
   return (
     <div className="space-y-6">
@@ -302,7 +263,6 @@ function MBBankContent() {
 
       {/* 3 Thẻ KPI Fresh & Free (Xanh Mint - Xanh Trời - Cam Đào) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-        {/* KPI 1: Tiền nhận hôm nay (Mint) */}
         <Card className="border border-[#D8EFE9] bg-gradient-to-br from-emerald-50/70 to-white p-4 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-emerald-800">Tiền vào hôm nay</span>
@@ -320,7 +280,6 @@ function MBBankContent() {
           </div>
         </Card>
 
-        {/* KPI 2: Tiền nhận tháng này (Sky) */}
         <Card className="border border-sky-200/80 bg-gradient-to-br from-sky-50/70 to-white p-4 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-sky-800">Tiền vào tháng này</span>
@@ -338,7 +297,6 @@ function MBBankContent() {
           </div>
         </Card>
 
-        {/* KPI 3: Số dư gần nhất (Peach) */}
         <Card className="border border-orange-200/80 bg-gradient-to-br from-orange-50/70 to-white p-4 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-orange-800">Số dư MB Bank mới nhất</span>
@@ -375,7 +333,7 @@ function MBBankContent() {
                 <button
                   type="button"
                   onClick={handleCopyAccount}
-                  className="min-h-[44px] px-2 text-slate-400 hover:text-sky-600 inline-flex items-center gap-1 text-xs"
+                  className="min-h-[44px] px-2 text-slate-400 hover:text-sky-600 inline-flex items-center gap-1 text-xs cursor-pointer"
                   title="Sao chép số tài khoản"
                 >
                   {isCopiedAcc ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
@@ -400,7 +358,7 @@ function MBBankContent() {
                   key={f.id}
                   type="button"
                   onClick={() => setFilterType(f.id)}
-                  className={`min-h-[38px] px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
+                  className={`min-h-[38px] px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                     filterType === f.id
                       ? "bg-white text-emerald-800 shadow-xs"
                       : "text-slate-600 hover:text-slate-900"
@@ -421,7 +379,7 @@ function MBBankContent() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Tìm theo nội dung chuyển khoản, người gửi, số tài khoản, mã tham chiếu..."
-            className="w-full h-11 pl-10 pr-4 text-base rounded-xl border border-[#D8EFE9] bg-white text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-colors"
+            className="w-full h-11 pl-10 pr-4 text-base rounded-xl border border-[#D8EFE9] bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-colors"
           />
         </div>
       </div>
@@ -551,220 +509,28 @@ function MBBankContent() {
         </div>
       )}
 
-      {/* ================= MODAL 1: MÃ VIETQR QUẦY ================= */}
-      <Modal
+      {/* Modals */}
+      <VietQrModal
         isOpen={isQrModalOpen}
         onClose={() => setIsQrModalOpen(false)}
-        title="Mã VietQR Nhận Tiền Tại Quầy"
-        description="Khách dùng ứng dụng ngân hàng bất kỳ để quét mã trả tiền"
-      >
-        <div className="space-y-4">
-          {/* Card hiển thị QR */}
-          <div className="bg-white border-2 border-emerald-500/30 rounded-2xl p-4 text-center space-y-3 shadow-xs">
-            <div className="relative mx-auto w-64 h-64 bg-slate-50 rounded-xl overflow-hidden flex items-center justify-center border border-slate-200">
-              <Image
-                src={vietQrUrl}
-                alt="VietQR MB Bank"
-                fill
-                sizes="256px"
-                className="object-contain"
-                unoptimized
-              />
-            </div>
+        defaultAccNo={defaultAccNo}
+        defaultAccName={defaultAccName}
+        onCopyAccount={handleCopyAccount}
+      />
 
-            <div>
-              <h4 className="font-bold text-sm text-slate-900">{defaultAccName}</h4>
-              <p className="font-mono text-xs text-sky-700 font-semibold">{defaultAccNo} (MB Bank)</p>
-              {qrAmountNum > 0 && (
-                <div className="mt-1 text-lg font-bold font-mono tabular-nums text-emerald-700">
-                  {formatVND(qrAmountNum)}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Ô nhập số tiền tùy chọn */}
-          <div className="space-y-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Số tiền cần thanh toán (VNĐ) — Để trống nếu khách tự gõ:
-              </label>
-              <input
-                type="text"
-                value={qrAmount}
-                onChange={(e) => {
-                  const raw = e.target.value;
-                  const num = parseVND(raw);
-                  setQrAmount(num > 0 ? formatVND(num) : raw);
-                }}
-                placeholder="VD: 35.000 (hoặc để trống)"
-                className="w-full h-11 px-3 text-base font-mono tabular-nums rounded-xl border border-[#D8EFE9] bg-white text-slate-900 focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Nội dung chuyển khoản gợi ý:
-              </label>
-              <input
-                type="text"
-                value={qrNote}
-                onChange={(e) => setQrNote(e.target.value)}
-                placeholder="VD: Ban 03 cafe"
-                className="w-full h-11 px-3 text-base rounded-xl border border-[#D8EFE9] bg-white text-slate-900 focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-              />
-            </div>
-          </div>
-
-          <div className="pt-2 flex items-center justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCopyAccount}
-              className="min-h-[44px] gap-1.5"
-            >
-              <Copy className="w-4 h-4" />
-              <span>Chép số tài khoản</span>
-            </Button>
-            <Button
-              type="button"
-              onClick={() => setIsQrModalOpen(false)}
-              className="min-h-[44px] px-6"
-            >
-              Đóng
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* ================= MODAL 2: GIẢ LẬP THÔNG BÁO TIỀN VÀO ================= */}
-      <Modal
+      <BankSimulatorModal
         isOpen={isSimulatorOpen}
         onClose={() => setIsSimulatorOpen(false)}
-        title="Giả Lập Thông Báo Tiền Vào MB Bank"
-        description="Bắn thử biến động số dư tức thì để kiểm tra tính năng mà không cần giao dịch thực tế"
-      >
-        <div className="space-y-4">
-          <div>
-            <span className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Chọn nhanh thông báo mẫu:
-            </span>
-            <div className="space-y-1.5">
-              {SAMPLE_NOTIFICATIONS.map((sample, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setSimText(sample.text)}
-                  className="w-full text-left p-2.5 rounded-xl border border-[#D8EFE9] hover:bg-emerald-50/60 transition-colors text-xs flex items-center justify-between gap-2"
-                >
-                  <span className="font-medium text-slate-800 truncate">{sample.title}</span>
-                  <span className="text-[11px] text-emerald-700 font-semibold shrink-0">Chọn</span>
-                </button>
-              ))}
-            </div>
-          </div>
+        onSimulateSend={handleSimulateSend}
+        isLoading={isSimulating}
+      />
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Nội dung thông báo đầy đủ (Chuẩn app MBBank hoặc SMS):
-            </label>
-            <textarea
-              rows={4}
-              value={simText}
-              onChange={(e) => setSimText(e.target.value)}
-              className="w-full p-3 text-base font-mono rounded-xl border border-[#D8EFE9] bg-white text-slate-900 focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 resize-none leading-relaxed"
-            />
-          </div>
-
-          <div className="pt-2 flex items-center justify-end gap-2 border-t border-[#D8EFE9]">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsSimulatorOpen(false)}
-              className="min-h-[44px]"
-            >
-              Hủy
-            </Button>
-            <Button
-              type="button"
-              loading={isSimulating}
-              onClick={handleSimulateSend}
-              className="min-h-[44px] px-5 gap-1.5"
-            >
-              <Send className="w-4 h-4" />
-              <span>Bắn giả lập ngay</span>
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* ================= MODAL 3: HƯỚNG DẪN KẾT NỐI 2 PHÚT ================= */}
-      <Modal
+      <WebhookGuideModal
         isOpen={isGuideOpen}
         onClose={() => setIsGuideOpen(false)}
-        title="Hướng Dẫn Kết Nối Webhook Tự Động (2 Phút)"
-        description="Cách đồng bộ biến động số dư MB Bank về Sổ Quản Trị Nhập Hàng"
-      >
-        <div className="space-y-4 text-xs text-slate-600 leading-relaxed">
-          {/* Địa chỉ Webhook */}
-          <div className="bg-slate-50 border border-[#D8EFE9] rounded-xl p-3 space-y-1.5">
-            <span className="text-[11px] font-semibold text-slate-700 block">Địa chỉ Webhook nhận tin:</span>
-            <div className="flex items-center gap-2">
-              <code className="text-[11px] font-mono text-emerald-800 bg-white px-2.5 py-1.5 rounded-lg border border-[#D8EFE9] flex-1 truncate">
-                {webhookUrl}
-              </code>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCopyWebhook}
-                className="min-h-[38px] px-3 shrink-0 gap-1 text-xs"
-              >
-                {isCopiedWebhook ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{isCopiedWebhook ? "Đã chép" : "Sao chép"}</span>
-              </Button>
-            </div>
-            <p className="text-[11px] text-slate-400">
-              Khóa bí mật: <code className="font-mono font-semibold text-slate-600">MBBANK_WEBHOOK_SECRET</code> (nếu đã đặt trong file .env).
-            </p>
-          </div>
+        webhookUrl={webhookUrl}
+      />
 
-          <div className="space-y-2">
-            <h4 className="font-semibold text-slate-900 text-xs flex items-center gap-1.5">
-              <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 inline-flex items-center justify-center font-bold text-[10px]">
-                1
-              </span>
-              Cách 1: Điện thoại Android (Miễn phí 100%, khuyến nghị)
-            </h4>
-            <p className="pl-6 text-slate-500">
-              1. Tải ứng dụng <strong>Notification Forwarder</strong> hoặc <strong>MacroDroid</strong> từ Google Play Store trên điện thoại có cài app MBBank.
-              <br />
-              2. Tạo quy tắc: Khi có thông báo từ ứng dụng <em>MBBank</em>, thực hiện gửi HTTP Request (POST) đến đường link Webhook phía trên với trường <code>content</code> hoặc toàn bộ văn bản thông báo.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <h4 className="font-semibold text-slate-900 text-xs flex items-center gap-1.5">
-              <span className="w-5 h-5 rounded-full bg-sky-100 text-sky-800 inline-flex items-center justify-center font-bold text-[10px]">
-                2
-              </span>
-              Cách 2: Cổng Webhook tự động (SePay / Casso)
-            </h4>
-            <p className="pl-6 text-slate-500">
-              1. Đăng ký tài khoản tại <em>SePay.vn</em> hoặc <em>Casso.vn</em> và liên kết tài khoản MB Bank của bạn.
-              <br />
-              2. Vào mục <strong>Cấu hình Webhook</strong>, dán đường dẫn Webhook phía trên vào và chọn ngân hàng MBBank. Hệ thống sẽ tự động bắt giao dịch theo thời gian thực.
-            </p>
-          </div>
-
-          <div className="pt-2 flex justify-end border-t border-[#D8EFE9]">
-            <Button onClick={() => setIsGuideOpen(false)} className="min-h-[44px] px-6">
-              Đã hiểu
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Confirm Delete Modal */}
       <ConfirmDeleteModal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}

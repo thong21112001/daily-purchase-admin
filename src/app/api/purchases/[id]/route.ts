@@ -1,11 +1,23 @@
 import { NextResponse } from "next/server";
 import { PurchaseService } from "@/services/purchase.service";
+import { isValidObjectId } from "@/lib/utils/validation";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
+    if (!isValidObjectId(id)) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "ID phiếu mua hàng không hợp lệ",
+          timestamp: new Date().toISOString(),
+        },
+        { status: 400 }
+      );
+    }
     const purchase = await PurchaseService.getPurchaseById(id);
 
     if (!purchase) {
@@ -42,6 +54,17 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
+    if (!isValidObjectId(id)) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "ID phiếu mua hàng không hợp lệ",
+          timestamp: new Date().toISOString(),
+        },
+        { status: 400 }
+      );
+    }
     const body = await request.json();
 
     const updated = await PurchaseService.updatePurchaseLog(id, body);
@@ -82,6 +105,17 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
+    if (!isValidObjectId(id)) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "ID phiếu mua hàng không hợp lệ",
+          timestamp: new Date().toISOString(),
+        },
+        { status: 400 }
+      );
+    }
     const deleted = await PurchaseService.deletePurchaseLog(id);
 
     if (!deleted) {

@@ -207,4 +207,25 @@ export function getPastDaysOptions(days = 8): PastDayOption[] {
   return options;
 }
 
+/**
+ * Lấy dateKey của ngày cuối cùng trong tháng (hỗ trợ chính xác 28, 29, 30, 31 ngày)
+ * Ví dụ: "2026-11" -> "2026-11-30", "2026-02" -> "2026-02-28"
+ */
+export function getEndOfMonthDateKey(monthKey: string): string {
+  const [yearStr, monthStr] = monthKey.split("-");
+  const year = parseInt(yearStr, 10);
+  const month = parseInt(monthStr, 10);
+
+  if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
+    return `${monthKey}-31`;
+  }
+
+  // Ngày 0 của tháng kế tiếp là ngày cuối của tháng hiện tại
+  const lastDay = new Date(year, month, 0).getDate();
+  const mm = String(month).padStart(2, "0");
+  const dd = String(lastDay).padStart(2, "0");
+  return `${year}-${mm}-${dd}`;
+}
+
+
 

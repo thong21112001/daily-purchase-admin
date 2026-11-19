@@ -3,6 +3,8 @@ import { PurchaseLog } from "@/models/purchase-log.model";
 import { CatalogItem } from "@/models/catalog-item.model";
 import { Supplier } from "@/models/supplier.model";
 import { Counter } from "@/models/counter.model";
+import { SavingsCheckin } from "@/models/savings-checkin.model";
+import { SavingsSetting } from "@/models/savings-setting.model";
 import { formatDateVN, getDateRange } from "@/lib/utils/date";
 import * as XLSX from "xlsx";
 
@@ -14,6 +16,8 @@ export interface BackupDataPayload {
   catalogItems: any[];
   purchaseLogs: any[];
   suppliers?: any[];
+  savingsCheckins?: any[];
+  savingsSettings?: any[];
 }
 
 export class ExportService {
@@ -313,11 +317,13 @@ export class ExportService {
   static async generateBackupJSON(): Promise<BackupDataPayload> {
     await connectToDatabase();
 
-    const [counters, catalogItems, purchaseLogs, suppliers] = await Promise.all([
+    const [counters, catalogItems, purchaseLogs, suppliers, savingsCheckins, savingsSettings] = await Promise.all([
       Counter.find().lean(),
       CatalogItem.find().lean(),
       PurchaseLog.find().lean(),
       Supplier.find().lean(),
+      SavingsCheckin.find().lean(),
+      SavingsSetting.find().lean(),
     ]);
 
     return {
@@ -328,6 +334,8 @@ export class ExportService {
       catalogItems,
       purchaseLogs,
       suppliers,
+      savingsCheckins,
+      savingsSettings,
     };
   }
 
@@ -432,13 +440,50 @@ export class ExportService {
       }
     }
 
+    // 5. Merge Savings Checkins
+    let restoredCheckins = 0;
+    if (Array.isArray(payload.savingsCheckins)) {
+      for (const sc of payload.savingsCheckins) {
+        if (!sc.dateKey) continue;
+        const existing = await SavingsCheckin.findOne({ dateKey: sc.dateKey });
+        if (existing) {
+          existing.amount = sc.amount !== undefined ? sc.amount : existing.amount;
+          existing.isMakeup = sc.isMakeup !== undefined ? sc.isMakeup : existing.isMakeup;
+          existing.note = sc.note !== undefined ? sc.note : existing.note;
+          await existing.save();
+        } else {
+          await SavingsCheckin.create({
+            dateKey: sc.dateKey,
+            amount: sc.amount || 200000,
+            isMakeup: !!sc.isMakeup,
+            note: sc.note || "",
+            checkedInAt: sc.checkedInAt ? new Date(sc.checkedInAt) : new Date(),
+          });
+        }
+        restoredCheckins++;
+      }
+    }
+
+    // 6. Merge Savings Settings
+    if (Array.isArray(payload.savingsSettings)) {
+      for (const ss of payload.savingsSettings) {
+        if (!ss.key) continue;
+        await SavingsSetting.findOneAndUpdate(
+          { key: ss.key },
+          { $set: { defaultAmount: ss.defaultAmount || 200000, targetMonthlyDays: ss.targetMonthlyDays || 30 } },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+      }
+    }
+
     return {
       success: true,
       restoredCounters,
       restoredCatalog,
       restoredPurchases,
       restoredSuppliers,
-      message: `Đã khôi phục thành công: ${restoredPurchases} phiếu mua hàng, ${restoredCatalog} mặt hàng, ${restoredSuppliers} nơi mua`,
+      restoredCheckins,
+      message: `Đã khôi phục thành công: ${restoredPurchases} phiếu mua hàng, ${restoredCatalog} mặt hàng, ${restoredSuppliers} nơi mua, ${restoredCheckins} ngày điểm danh`,
     };
   }
 }

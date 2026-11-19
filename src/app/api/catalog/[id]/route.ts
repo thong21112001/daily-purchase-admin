@@ -1,11 +1,23 @@
 import { NextResponse } from "next/server";
 import { CatalogService } from "@/services/catalog.service";
+import { isValidObjectId } from "@/lib/utils/validation";
 
 export const dynamic = "force-dynamic";
 
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
+    if (!isValidObjectId(id)) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "ID mặt hàng không hợp lệ",
+          timestamp: new Date().toISOString(),
+        },
+        { status: 400 }
+      );
+    }
     const body = await request.json();
 
     const updated = await CatalogService.updateCatalogItem(id, body);
@@ -45,6 +57,17 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
+    if (!isValidObjectId(id)) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "ID mặt hàng không hợp lệ",
+          timestamp: new Date().toISOString(),
+        },
+        { status: 400 }
+      );
+    }
     const deleted = await CatalogService.deleteCatalogItem(id);
 
     if (!deleted) {

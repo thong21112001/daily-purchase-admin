@@ -30,11 +30,12 @@ export async function GET(request: Request) {
     }
 
     const query = searchParams.get("q");
+    const isAutocomplete = searchParams.get("suggest") === "true" || searchParams.get("autocomplete") === "true";
 
-    // 1. Chế độ tìm kiếm gợi ý tức thì (Auto-Complete Suggestions)
-    if (query !== null) {
+    // 1. Chế độ tìm kiếm gợi ý tức thì (Auto-Complete Suggestions cho Input)
+    if (isAutocomplete || (query !== null && !searchParams.has("sort") && !searchParams.has("category") && searchParams.get("limit") && parseInt(searchParams.get("limit")!, 10) <= 10)) {
       const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!, 10) : 10;
-      const suggestions = await CatalogService.searchCatalogItems(query, limit);
+      const suggestions = await CatalogService.searchCatalogItems(query || "", limit);
 
       return NextResponse.json({
         success: true,
@@ -44,13 +45,13 @@ export async function GET(request: Request) {
       });
     }
 
-    // 2. Chế độ lấy danh sách toàn bộ danh mục mặt hàng có phân trang
+    // 2. Chế độ lấy danh sách toàn bộ danh mục mặt hàng có phân trang, tìm kiếm & sắp xếp
     const category = searchParams.get("category") || undefined;
     const sort = (searchParams.get("sort") as any) || "usage";
     const page = searchParams.get("page") ? parseInt(searchParams.get("page")!, 10) : 1;
     const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!, 10) : 50;
 
-    const result = await CatalogService.getCatalogItems({ category, sort, page, limit });
+    const result = await CatalogService.getCatalogItems({ category, query: query || undefined, sort, page, limit });
 
     return NextResponse.json({
       success: true,

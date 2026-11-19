@@ -24,13 +24,14 @@
 4. [Mô Hình Dữ Liệu Cốt Lõi (Mongoose Schemas)](#4-mô-hình-dữ-liệu-cốt-lõi-mongoose-schemas)
 5. [Hệ Thống API Endpoints & Nghiệp Vụ](#5-hệ-thống-api-endpoints--nghiệp-vụ)
 6. [Hệ Thống Giao Diện & Trải Nghiệm Nhập Hàng](#6-hệ-thống-giao-diện--trải-nghiệm-nhập-hàng)
-7. [Tích Hợp MB Bank Tracker & VietQR Tại Quầy](#7-tích-hợp-mb-bank-tracker--vietqr-tại-quầy)
-8. [Cơ Chế Bảo Mật Single-Owner (Secret-Zero)](#8-cơ-chế-bảo-mật-single-owner-secret-zero)
-9. [Hướng Dẫn Thiết Lập MongoDB Atlas M0 Miễn Phí](#9-hướng-dẫn-thiết-lập-mongodb-atlas-m0-miễn-phí)
-10. [Hướng Dẫn Triển Khai Lên Vercel (Singapore `sin1`)](#10-hướng-dẫn-triển-khai-lên-vercel-singapore-sin1)
-11. [Cài Đặt PWA Trên Điện Thoại Samsung Galaxy A35 5G](#11-cài-đặt-pwa-trên-điện-thoại-samsung-galaxy-a35-5g)
-12. [Khởi Chạy Local & Kiểm Thử Tự Động Toàn Diện](#12-khởi-chạy-local--kiểm-thử-tự-động-toàn-diện)
-13. [Lộ Trình Dự Án & Trạng Thái Nghiệm Thu 11 Bước](#13-lộ-trình-dự-án--trạng-thái-nghiệm-thu-11-bước)
+7. [Tính Năng Điểm Danh Tiết Kiệm Mỗi Ngày (+200k/ngày)](#7-tính-năng-điểm-danh-tiết-kiệm-mỗi-ngày-200kngày)
+8. [Tích Hợp MB Bank Tracker & VietQR Tại Quầy](#8-tích-hợp-mb-bank-tracker--vietqr-tại-quầy)
+9. [Cơ Chế Bảo Mật Single-Owner (Secret-Zero)](#9-cơ-chế-bảo-mật-single-owner-secret-zero)
+10. [Hướng Dẫn Thiết Lập MongoDB Atlas M0 Miễn Phí](#10-hướng-dẫn-thiết-lập-mongodb-atlas-m0-miễn-phí)
+11. [Hướng Dẫn Triển Khai Lên Vercel (Singapore `sin1`)](#11-hướng-dẫn-triển-khai-lên-vercel-singapore-sin1)
+12. [Cài Đặt PWA Trên Điện Thoại Samsung Galaxy A35 5G](#12-cài-đặt-pwa-trên-điện-thoại-samsung-galaxy-a35-5g)
+13. [Khởi Chạy Local & Kiểm Thử Tự Động Toàn Diện (101/101 Tests PASS)](#13-khởi-chạy-local--kiểm-thử-tự-động-toàn-diện-101101-tests-pass)
+14. [Lộ Trình Dự Án & Trạng Thái Nghiệm Thu 11 Bước](#14-lộ-trình-dự-án--trạng-thái-nghiệm-thu-11-bước)
 
 ---
 
@@ -40,6 +41,8 @@
 - **Ghi chép tức thì tại thực địa**: Mở điện thoại Samsung Galaxy A35 5G ghi nhận ngay khi vừa thanh toán: mặt hàng, số lượng, đơn vị, đơn giá, thành tiền, nơi mua.
 - **Mã phiếu độc lập theo đợt**: Mỗi lần lưu phiếu tự động sinh mã nguyên tử `PO-YYYYMMDD-XXX` độc lập, rõ ràng theo từng lần đi mua.
 - **Tự động học Nơi mua & Danh mục (`Auto-Learn`)**: Tự động lưu và cập nhật tần suất sử dụng của Nhà cung cấp/Nơi mua (`Supplier`) và Mặt hàng (`CatalogItem`), hỗ trợ tự nhập đơn vị đo mới tùy ý.
+- **Sắp xếp Đa dạng & Chuẩn Tiếng Việt (`Catalog Sorting`)**: Sắp xếp mặt hàng theo Tần suất mua (`usage`), Đơn giá (`price_asc`, `price_desc` với cơ chế chìm giá 0/null xuống đáy), Tên tiếng Việt A $\rightarrow$ Z và Z $\rightarrow$ A (`{ locale: 'vi', strength: 1 }`).
+- **Điểm danh Tiết kiệm Mỗi ngày (+200k/ngày)**: Tích lũy tài chính bền vững với Widget 1 chạm trên Trang chủ (`/`), theo dõi chuỗi ngày liên tiếp (`Streak`), lịch tháng trực quan 7 cột tại `/savings` và điểm danh bù linh hoạt.
 - **Tính toán tiền tệ 2 chiều**: Tự động tính Thành tiền từ Số lượng $\times$ Đơn giá, hoặc tự động chia ngược Đơn giá khi mua cân/mớ lẻ (Ví dụ: mua 1.5kg hết 85.000đ $\rightarrow$ tự ra đơn giá $56.667\text{ đ/kg}$).
 - **MB Bank Tracker & VietQR**: Bắt biến động số dư tự động qua Webhook bảo mật, cập nhật tức thì mỗi 10 giây, hỗ trợ hiển thị mã VietQR thanh toán nhanh tại quầy.
 - **Xuất Excel `.xlsx` chuẩn xác**: Tự động tính độ rộng cột (`wch`) vừa vặn, không bị `###` hay mất chữ, kèm dòng **TỔNG CỘNG** ở cuối.
@@ -65,18 +68,21 @@
 
 ## 3. 🎨 Chuẩn Thiết Kế UI/UX "Fresh & Free" & Samsung Galaxy A35 5G PWA
 
-Hệ thống được thiết kế theo phong cách **Fresh & Free (Tươi Sáng, Tự Do, Rõ Nét)** và tối ưu hóa Pixel-Perfect cho màn hình tham chiếu **Samsung Galaxy A35 5G** cũng như Laptop/Desktop:
+Hệ thống được thiết kế theo phong cách **Fresh & Free (Tươi Sáng, Tự Do, Rõ Nét)** và tối ưu hóa Pixel-Perfect cho màn hình tham chiếu **Samsung Galaxy A35 5G (360px – 412px)** cũng như Laptop/Desktop:
 - **Bảng màu chủ đạo**:
   - `bg-app`: `#F4FBF9` (Trắng ngọc bích cực dịu mắt).
   - `bg-surface`: `#FFFFFF` viền `1px solid #D8EFE9`, bóng đổ nhẹ `shadow-[0_4px_20px_-4px_rgba(16,185,129,0.08)]`.
   - **Xanh Mint (`mint`)**: `#10B981` (Primary) — Màu chủ đạo thương hiệu, thể hiện sự tươi mới, thịnh vượng.
-  - **Cam Đào (`peach`)**: `#FB923C` / `#F97316` (Accent) — Dùng cho CTA "+ Ghi hàng", tổng tiền, điểm nhấn thao tác.
+  - **Cam Đào (`peach`)**: `#FB923C` / `#F97316` (Accent) — Dùng cho CTA "+ Ghi hàng", nút Điểm danh, tổng tiền, điểm nhấn thao tác.
   - **Xanh Trời (`sky`)**: `#0EA5E9` (Secondary) — Dùng cho bộ lọc, tag Nơi mua, thông tin thẻ MB Bank.
-- **Không gian hiển thị Mobile**: Màn hình 6.6", tỷ lệ 19.5:9, CSS Viewport `360px – 412px`.
+- **Layout Thẻ 2 Tầng Mobile (2-Tier Card Layout)**:
+  - Trên màn hình nhỏ ($< 640\text{px}$): Tầng 1 hiển thị Mã phiếu + Giờ mua (trái) và Tổng tiền đậm (phải); Tầng 2 hiển thị Nơi mua + Badge TM/CK (trái) và Nút Sửa/Xóa (phải).
+  - Trên màn hình lớn ($\ge 640\text{px}$): Hiển thị hàng đơn thoáng đãng, phân cấp thông tin rõ nét.
 - **Chống Auto-Zoom trên Mobile**: Mọi thẻ `<input>`, `<select>`, `<textarea>` bắt buộc $\ge 16\text{px}$ (`text-base`).
 - **Hitbox tối thiểu 44px**: Vùng chạm phím, nút bấm, tab điều hướng đáy tối thiểu $44\text{px} \times 44\text{px}$ (`min-h-[44px]`).
+- **Bàn phím nhập liệu chuẩn xác**: `inputMode="decimal"` cho ô số lượng và `inputMode="numeric"` cho ô tiền VNĐ.
 - **Căn thẳng hàng tiền tệ**: Dùng `tabular-nums font-mono` cho tất cả các số lượng, đơn giá, thành tiền VNĐ.
-- **Không tràn ngang & Zero Clipping**: Layout bảo đảm `overflow-x: hidden`, tách riêng fixed Header và Segmented Control để không bao giờ bị cắt chữ.
+- **Chống tràn ngang & Safe Area Padding**: Layout bảo đảm `overflow-x: hidden`, padding đáy `pb-[calc(5.5rem+env(safe-area-inset-bottom))]` bảo vệ nút không bị che bởi thanh điều hướng.
 - **PWA Standalone Mode**: Web App Manifest với icon SVG vector độ nét cao, chạy toàn màn hình không thanh URL.
 
 ---
@@ -93,26 +99,42 @@ Hệ thống được thiết kế theo phong cách **Fresh & Free (Tươi Sáng
    - **Khóa Sửa 1 Lần Duy Nhất**: `editCount` (Number, mặc định 0, tối đa 1), `editedAt` (Date). Khi `editCount >= 1`, backend từ chối mọi yêu cầu chỉnh sửa tiếp theo với HTTP 400 và UI vô hiệu hóa nút sửa kèm nhãn `Đã sửa (1/1)`.
 5. **`BankTransaction` (`bank-transaction.model.ts`)**: Lưu biến động số dư MB Bank:
    - `transactionRef` (unique indexed), `bankName`, `accountNumber`, `type` (`IN` | `OUT`), `amount`, `balanceAfter`, `senderName`, `content`, `transactionDate`, `dateKey`, `rawNotification`, `source`.
+6. **`SavingsCheckin` (`savings-checkin.model.ts`)**: Lưu lịch sử điểm danh tiết kiệm mỗi ngày:
+   - `dateKey` (unique indexed `YYYY-MM-DD` theo giờ VN), `amount` (mức tiền tích lũy ngày đó), `isMakeup` (điểm danh bù), `note`, `checkedInAt`.
+7. **`SavingsSetting` (`savings-setting.model.ts`)**: Lưu cấu hình mức tiền điểm danh mặc định:
+   - `key` (`default_daily_amount`), `defaultAmount` (mặc định 200.000 VNĐ, cho phép đổi mà không ảnh hưởng ngày trong quá khứ).
 
 ---
 
 ## 5. 🔌 Hệ Thống API Endpoints & Nghiệp Vụ
 
-- `POST /api/purchases`: Tạo đợt nhập hàng mới (sinh mã nguyên tử `PO-YYYYMMDD-XXX`, tự động học Catalog & Nơi mua).
+### Mua Hàng & Quản Trị
+- `POST /api/purchases`: Tạo đợt nhập hàng mới (sinh mã nguyên tử `PO-YYYYMMDD-XXX`, tự động học Catalog & Nơi mua, validate payload nghiêm ngặt).
 - `GET /api/purchases`: Tra cứu lịch sử theo ngày, khoảng ngày hoặc từ khóa không dấu.
-- `GET /api/purchases/[id]`: Xem chi tiết phiếu nhập hàng.
+- `GET /api/purchases/[id]`: Xem chi tiết phiếu nhập hàng (bảo vệ bằng `isValidObjectId`).
 - `PUT /api/purchases/[id]`: Chỉnh sửa phiếu (áp dụng giới hạn nghiêm ngặt **chỉ sửa 1 lần duy nhất**, lưu `editCount` và `editedAt`).
 - `DELETE /api/purchases/[id]`: Xóa phiếu nhập hàng (kèm modal xác nhận xóa Fresh & Free `ConfirmDeleteModal`).
 - `GET /api/suppliers`: Danh sách nơi mua, hỗ trợ cả tìm kiếm tức thì `?q=...` và phân trang đầy đủ `?query=...` hoặc `?category=...`.
 - `POST /api/suppliers` & `PUT`, `DELETE`: Quản lý nơi mua thủ công hoặc tự động.
-- `GET /api/catalog`: Tìm kiếm gợi ý tức thì (`?q=...`), lấy danh sách đơn vị đo tùy chỉnh (`?units=true`).
+- `GET /api/catalog`: Tra cứu mặt hàng với đa dạng bộ sắp xếp (`?sort=usage|price_asc|price_desc|name_asc|name_desc|recent`), tìm kiếm không dấu (`?q=...`), lấy danh sách đơn vị đo (`?units=true`).
 - `GET /api/catalog?seed=true`: Nạp nhanh 17 mặt hàng mẫu ngành F&B / Quán Cà phê.
 - `POST /api/catalog` & `PUT`, `DELETE`: Thao tác CRUD danh mục mặt hàng.
+
+### Điểm Danh Tiết Kiệm
+- `GET /api/checkins`: Lấy dữ liệu điểm danh theo tháng (`?monthKey=YYYY-MM`), trạng thái ngày hôm nay, chuỗi Streak và toàn bộ thống kê quỹ.
+- `POST /api/checkins`: Điểm danh hôm nay (idempotent, chống trùng 2 lần/ngày) hoặc điểm danh bù ngày quá khứ.
+- `PATCH /api/checkins/[dateKey]`: Điều chỉnh số tiền hoặc ghi chú của một ngày đã điểm danh.
+- `DELETE /api/checkins/[dateKey]`: Hủy điểm danh một ngày nếu lỡ tay bấm nhầm.
+- `POST /api/checkins/settings`: Cập nhật mức tiền điểm danh mặc định mỗi ngày.
+
+### Báo Cáo & Sao Lưu
 - `GET /api/reports`: Báo cáo KPI, lọc theo tháng `YYYY-MM` an toàn tuyệt đối lệch múi giờ, biểu đồ chi tiêu ngày, cơ cấu nhóm hàng và Top chi tiêu.
-- `GET /api/export/excel`: Xuất file Excel `.xlsx` tự động căn độ rộng cột (`wch`), hỗ trợ bộ lọc theo ngày (`dateKey`), theo tuần/khoảng ngày (`startDateKey` & `endDateKey`), theo tháng (`month`). Tự động tách từng ngày riêng bằng dòng trống, có dòng **TỔNG NGÀY** riêng biệt và dòng **TỔNG CỘNG TOÀN KỲ** ở cuối.
+- `GET /api/export/excel`: Xuất file Excel `.xlsx` tự động căn độ rộng cột (`wch`), hỗ trợ bộ lọc theo ngày, tuần, tháng và khoảng tùy chọn.
 - `GET /api/export/csv`: Xuất bảng tính CSV với UTF-8 BOM (`\uFEFF`).
-- `GET /api/export/backup`: Tải file JSON sao lưu toàn bộ dữ liệu (kèm danh sách Nơi mua).
+- `GET /api/export/backup`: Tải file JSON sao lưu toàn bộ dữ liệu (kèm phiếu, mặt hàng, nơi mua, điểm danh tiết kiệm và cấu hình).
 - `POST /api/export/backup`: Khôi phục dữ liệu theo cơ chế Merge/Upsert an toàn (Choice A).
+
+### Ngân Hàng MB Bank
 - `POST /api/webhooks/mbbank`: Webhook tiếp nhận biến động số dư từ Android Notification Forwarder hoặc SePay (bảo vệ bằng `MBBANK_WEBHOOK_SECRET`).
 - `GET /api/mbbank`: Lấy danh sách biến động số dư, thống kê Dashboard tiền vào hôm nay/tháng này (`?stats=true`).
 - `POST /api/mbbank`: Gửi thử nghiệm giả lập biến động số dư tức thì.
@@ -123,27 +145,38 @@ Hệ thống được thiết kế theo phong cách **Fresh & Free (Tươi Sáng
 ## 6. 📱 Hệ Thống Giao Diện & Trải Nghiệm Nhập Hàng
 
 ### 6.1. Bố Cục Thích Ứng (Adaptive Layout Shell)
-- **Desktop / Laptop ($\ge 1024\text{px}$)**:
-  - Form nhập hàng hiển thị dạng **Centered Dialog Modal rộng rãi (`max-w-4xl`)**:
-    - **Ghi lẻ 1 món**: 2 cột cân đối (Cột trái: Thời gian, Mặt hàng, Nhóm hàng, Nơi mua; Cột phải: Đơn vị tính, Số lượng, Đơn giá, Thanh toán).
-    - **Ghi theo hóa đơn**: Bảng nhập nhanh dạng Spreadsheet (STT, Tên món, Phân loại nhóm hàng từng dòng, Đơn vị, SL, Đơn giá, Thành tiền, Xóa) kèm Nơi mua chung của hóa đơn ở trên.
+- **Desktop / Laptop ($\ge 1024\text{px}$)**: Sidebar cố định gồm 6 mục: Hôm nay, Sổ ngày, Điểm danh tiết kiệm, Mặt hàng & Nơi mua, Báo cáo & Sao lưu, MB Bank.
 - **Mobile Galaxy A35 5G ($< 1024\text{px}$)**:
-  - Bottom Sheet vuốt chạm mượt mà, chiều cao nút $\ge 44\text{px}$, font chữ input $\ge 16\text{px}$ chống auto-zoom.
+  - Thanh điều hướng đáy (MobileBottomNav) giữ đúng 5 tab tối ưu chạm: `Hôm nay`, `Sổ ngày`, `[+ Ghi hàng]`, `Điểm danh`, `Báo cáo`.
+  - Phím tắt mở nhanh `MB Bank` và `Mặt hàng` được bố trí tại thanh tiêu đề đỉnh (MobileTopHeader).
 
-### 6.2. Năm Màn Hình Quản Trị Cốt Lõi
-1. **Trang 1: Hôm nay (`/`)**: 3 Bento KPI cards, danh sách chi tiết các đợt mua trong ngày, nút Sửa phiếu (chỉ 1 lần), nút Xóa phiếu với `ConfirmDeleteModal`, empty state tươi sáng.
-2. **Trang 2: Sổ theo ngày (`/history`)**: Bộ lọc thời gian (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tất cả), tìm kiếm tức thì không dấu, gom nhóm Accordion theo ngày, hỗ trợ sửa và xóa phiếu an toàn.
-3. **Trang 3: Mặt hàng & Nơi mua (`/catalog`)**: 2 tab chuyển đổi hiển thị số lượng chính xác ngay từ đầu (`Mặt hàng (X)` và `Nơi mua (Y)`), nạp song song, quản lý phân loại và đơn vị đo tùy chỉnh.
-4. **Trang 4: Báo cáo & Xuất Excel (`/reports`)**: Thanh điều hướng tháng (`< Tháng trước`, `Tháng sau >`, bộ chọn `YYYY-MM`), `AbortController` chống race condition, bộ lọc xuất Excel chuyên nghiệp (`ExcelExportFilterModal`) theo ngày, tuần, tháng và khoảng tùy chọn.
-5. **Trang 5: MB Bank Tracker & VietQR (`/mb-bank`)**: 3 KPI Tiền vào hôm nay, tháng này, số dư MB Bank, tự động làm mới mỗi 10 giây, mã VietQR nhận tiền tại quầy, Modal giả lập 1 chạm, `ConfirmDeleteModal` khi xóa giao dịch và Hướng dẫn kết nối 2 phút.
+### 6.2. Sáu Màn Hình Quản Trị Cốt Lõi
+1. **Trang 1: Hôm nay (`/`)**: Widget Điểm danh 1 chạm ở đầu trang, 3 Bento KPI cards, danh sách chi tiết các đợt mua với card 2 tầng chống tràn ngang, sửa phiếu (1 lần) và xóa phiếu.
+2. **Trang 2: Sổ theo ngày (`/history`)**: Bộ lọc thời gian (Hôm nay, Hôm qua, 7 ngày, Tháng này, Tất cả), tìm kiếm tức thì không dấu, card 2 tầng gom nhóm Accordion theo ngày.
+3. **Trang 3: Điểm danh tiết kiệm (`/savings`)**: 4 KPI Bento cards (Tổng quỹ, Tháng này, Số ngày đã lưu, Chuỗi ngày Streak), Lịch tháng trực quan 7 cột căn chuẩn từng pixel cho màn hình 360px–412px, modal điểm danh bù và cài đặt mức tiền mặc định.
+4. **Trang 4: Mặt hàng & Nơi mua (`/catalog`)**: Tách module sub-components gọn gàng (`CatalogToolbar`, `CatalogItemModal`, `SupplierModal`), hỗ trợ 6 chế độ sắp xếp (mua nhiều nhất, giá tăng/giảm với giá 0 chìm xuống đáy, tên tiếng Việt A-Z/Z-A, mới nhất).
+5. **Trang 5: Báo cáo & Xuất Excel (`/reports`)**: Thanh điều hướng tháng, `AbortController` chống race condition, bộ lọc xuất Excel chuyên nghiệp (`ExcelExportFilterModal`).
+6. **Trang 6: MB Bank Tracker & VietQR (`/mb-bank`)**: Tách module sub-components (`VietQrModal`, `BankSimulatorModal`, `WebhookGuideModal`), tự động làm mới mỗi 10 giây, mã VietQR nhận tiền tại quầy.
 
 ---
 
-## 7. 🏦 Tích Hợp MB Bank Tracker & VietQR Tại Quầy
+## 7. 🐷 Tính Năng Điểm Danh Tiết Kiệm Mỗi Ngày (+200k/ngày)
 
-Hệ thống cung cấp giải pháp theo dõi biến động số dư ngân hàng Quân Đội (MB Bank) hoàn toàn tự động:
+- **Mục tiêu**: Xây dựng thói quen tích lũy tài chính nhỏ mỗi ngày (+200.000 VNĐ mặc định hoặc tùy chỉnh).
+- **Widget 1 chạm Trang chủ**: Khi mở ứng dụng vào buổi sáng, chạm ngay nút `+200.000 ₫ Điểm danh ngay`, nút chuyển tức thì sang `Đã điểm danh ✓` kèm chuỗi Streak.
+- **Chuỗi ngày liên tiếp (Streak)**:
+  - Tự động duy trì chuỗi nếu điểm danh liên tục mỗi ngày.
+  - Có ân hạn trong ngày (nếu hôm nay chưa điểm danh, chuỗi của hôm qua vẫn được giữ lại để tiếp tục).
+  - Tự động vượt qua ranh giới chuyển tháng và năm nhuận.
+- **Điểm danh bù linh hoạt**: Chạm vào ngày quá khứ bị bỏ lỡ trên Lịch tháng để điểm danh bù, số tiền được cộng dồn chính xác vào tổng quỹ.
+- **Đồng bộ Sao lưu Toàn vẹn**: Lịch sử điểm danh và cấu hình mức tiền được tích hợp trong file sao lưu JSON `/api/export/backup`.
+
+---
+
+## 8. 🏦 Tích Hợp MB Bank Tracker & VietQR Tại Quầy
+
 1. **Smart Parser**:
-   - Tự động bóc tách thông báo đẩy từ app MBBank trên điện thoại Android (dùng app miễn phí *Notification Forwarder* hoặc *MacroDroid*).
+   - Tự động bóc tách thông báo đẩy từ app MBBank trên điện thoại Android (Notification Forwarder / MacroDroid).
    - Tự động nhận diện chuẩn JSON Webhook từ cổng *SePay.vn* hoặc *Casso.vn*.
 2. **Cơ Chế Chống Trùng Lặp**:
    - Tự động sinh `transactionRef` duy nhất dựa trên mã tham chiếu hoặc hàm băm MD5 deterministic, đảm bảo không bao giờ bị lưu trùng giao dịch khi webhook gửi lại.
@@ -153,15 +186,16 @@ Hệ thống cung cấp giải pháp theo dõi biến động số dư ngân hà
 
 ---
 
-## 8. 🔐 Cơ Chế Bảo Mật Single-Owner (Secret-Zero)
+## 9. 🔐 Cơ Chế Bảo Mật Single-Owner (Secret-Zero)
 
 - Toàn bộ bí mật (`OWNER_USERNAME`, `OWNER_PASSWORD`, `JWT_SECRET`, `MONGODB_URI`, `MBBANK_WEBHOOK_SECRET`) được đọc từ biến môi trường (`.env.local`).
 - JWT ký bằng thuật toán HMAC-SHA256 bản địa (Native Node.js Crypto / Web Crypto), lưu trong Cookie `HttpOnly; Secure; SameSite=Lax` thời hạn 90 ngày.
-- Middleware Edge chặn toàn bộ truy cập trái phép vào Dashboard và `/api/*` (ngoại trừ các endpoint công khai được kiểm soát như `/login` và `/api/webhooks/mbbank`).
+- Middleware Edge chặn toàn bộ truy cập trái phép vào Dashboard và `/api/*` (ngoại trừ các endpoint công khai như `/login`, `/api/health`, `/api/webhooks/mbbank`).
+- Tuyệt đối 0 secret, token, mật khẩu hoặc connection string nào bị hardcode trong mã nguồn.
 
 ---
 
-## 9. ☁️ Hướng Dẫn Thiết Lập MongoDB Atlas M0 Miễn Phí
+## 10. ☁️ Hướng Dẫn Thiết Lập MongoDB Atlas M0 Miễn Phí
 
 1. Đăng ký tài khoản tại [https://cloud.mongodb.com](https://cloud.mongodb.com).
 2. Tạo cụm **M0 Free** tại vùng **AWS Singapore (`ap-southeast-1`)**.
@@ -171,7 +205,7 @@ Hệ thống cung cấp giải pháp theo dõi biến động số dư ngân hà
 
 ---
 
-## 10. 🚀 Hướng Dẫn Triển Khai Lên Vercel (Singapore `sin1`)
+## 11. 🚀 Hướng Dẫn Triển Khai Lên Vercel (Singapore `sin1`)
 
 1. Đẩy code lên GitHub repository của bạn.
 2. Vào Vercel Dashboard $\rightarrow$ **Add New Project** $\rightarrow$ Chọn repo `daily-purchase-admin`.
@@ -187,7 +221,7 @@ Hệ thống cung cấp giải pháp theo dõi biến động số dư ngân hà
 
 ---
 
-## 11. 📲 Cài Đặt PWA Trên Điện Thoại Samsung Galaxy A35 5G
+## 12. 📲 Cài Đặt PWA Trên Điện Thoại Samsung Galaxy A35 5G
 
 1. Mở Chrome hoặc Samsung Internet trên Galaxy A35 5G, truy cập URL Vercel của bạn.
 2. Bấm vào menu 3 chấm $\rightarrow$ Chọn **"Thêm vào Màn hình chính" (Add to Home screen)**.
@@ -195,7 +229,7 @@ Hệ thống cung cấp giải pháp theo dõi biến động số dư ngân hà
 
 ---
 
-## 12. 💻 Khởi Chạy Local & Kiểm Thử Tự Động Toàn Diện
+## 13. 💻 Khởi Chạy Local & Kiểm Thử Tự Động Toàn Diện (101/101 Tests PASS)
 
 ```bash
 # 1. Cài đặt dependencies
@@ -204,27 +238,27 @@ npm install
 # 2. Cấu hình môi trường
 cp .env.example .env.local
 
-# 3. Chạy toàn bộ 74 ca kiểm thử tự động
+# 3. Chạy toàn bộ 101 ca kiểm thử tự động
 npm test
 
-# 4. Kiểm tra kiểu tĩnh TypeScript
-npx tsc --noEmit
-
-# 5. Build kiểm tra production
+# 4. Kiểm tra kiểu tĩnh TypeScript & Build production
 npm run build
 
-# 6. Khởi chạy máy chủ phát triển local
+# 5. Khởi chạy máy chủ phát triển local
 npm run dev
 ```
 
-### Bảng Kết Quả Kiểm Thử Tự Động (74/74 Tests 100% PASS)
+### Bảng Kết Quả Kiểm Thử Tự Động (101/101 Tests 100% PASS)
 
 | Nhóm Kiểm Thử | Số Ca Test | Trạng Thái | Mô Tả |
 | :--- | :---: | :---: | :--- |
-| **Phase 4 E2E Full Regression** | 23 | ✅ PASS | Kiểm thử trọn vẹn 11 miền chức năng (Auth, PO code, Math 2 chiều, Auto-Learn, Timezone UTC+7, Tìm kiếm không dấu, Báo cáo, CSV BOM, Backup Merge, Galaxy A35 UI, Secret-Zero) |
+| **Phase 4 E2E Full Regression** | 30 | ✅ PASS | Kiểm thử trọn vẹn 14 miền chức năng (Auth, PO code, Math 2 chiều, Auto-Learn, Timezone UTC+7, Tìm kiếm không dấu, Báo cáo, CSV BOM, Backup Merge, Galaxy A35 UI, Secret-Zero, Điểm danh tiết kiệm, Sắp xếp Catalog & Thẻ 2 tầng) |
+| **Daily Savings Checkin Unit Tests** | 8 | ✅ PASS | Streak liên tục, ân hạn trong ngày, ranh giới tháng/năm nhuận, kỷ lục chuỗi, dateKey UTC+7 |
+| **Catalog Sorting & Collation Unit Tests** | 5 | ✅ PASS | Cơ chế dìm giá 0/null xuống đáy, sắp xếp giá tăng/giảm, collation tiếng Việt A-Z/Z-A ('D' trước 'Đ') |
+| **Savings Check-in Integration & Backup Tests** | 5 | ✅ PASS | Idempotent chống trùng, điểm danh bù, cập nhật số tiền, xóa điểm danh, sao lưu & khôi phục Merge |
 | **MB Bank Parser Unit Tests** | 5 | ✅ PASS | Trích xuất thông báo Android app push, SMS, SePay JSON, chống trùng lặp deterministic |
-| **Excel Export Unit Tests** | 1 | ✅ PASS | Sinh workbook `.xlsx` SheetJS, cấu trúc bảng 12 cột, auto-fit độ rộng cột `wch`, dòng TỔNG CỘNG |
-| **Reports Month Navigation Tests** | 3 | ✅ PASS | Khoảng chuỗi ngày `YYYY-MM-01` đến `YYYY-MM-31`, an toàn tháng 2/4/11, empty month state |
+| **Excel Export Unit Tests** | 2 | ✅ PASS | Sinh workbook `.xlsx` SheetJS, cấu trúc bảng 12 cột, auto-fit độ rộng cột `wch`, dòng TỔNG CỘNG |
+| **Reports Month Navigation Tests** | 3 | ✅ PASS | Khoảng chuỗi ngày `YYYY-MM-01` đến ngày cuối tháng chính xác, an toàn tháng 2/4/11, empty month state |
 | **Supplier & Custom Units Tests** | 3 | ✅ PASS | Chuẩn hóa tên không dấu, máy trạng thái tăng `usageCount`, hợp nhất đơn vị đo tùy chỉnh |
 | **MB Bank Webhook Routing Tests** | 2 | ✅ PASS | Xác thực Bearer, X-Secret, query param, phân định payload SePay vs Android Forwarder |
 | **Samsung Galaxy A35 5G UI/UX Audit** | 5 | ✅ PASS | Cỡ chữ $\ge 16\text{px}$ chống auto-zoom, touch targets $\ge 44\text{px}$, căn lề `tabular-nums`, triệt tiêu 100% icon AI, chống tràn ngang |
@@ -233,26 +267,26 @@ npm run dev
 | **Vietnamese Search Normalization** | 3 | ✅ PASS | Khử dấu tiếng Việt, tìm kiếm theo từ khóa token không dấu, sinh regex |
 | **Single-Owner Authentication** | 4 | ✅ PASS | Ký và xác minh JWT HMAC-SHA256, từ chối token giả mạo, kiểm tra timing-safe password |
 | **Phase 3 UI Logic & Workflow** | 4 | ✅ PASS | Tính toán 2 chiều xuôi - ngược, dãy chip tiền tệ cố định & động, cộng dồn hóa đơn, auto-complete F&B |
-| **Purchase Workflow & Auto-Learn** | 3 | ✅ PASS | Sinh mã PO nguyên tử, tính toán 2 chiều, máy trạng thái Auto-Learn cập nhật dải giá |
+| **Purchase Workflow & Auto-Learn** | 4 | ✅ PASS | Sinh mã PO nguyên tử, tính toán 2 chiều, máy trạng thái Auto-Learn cập nhật dải giá, khóa sửa 1 lần |
 | **Reports Aggregation & Analytics** | 3 | ✅ PASS | Tổng hợp KPI theo dateKey VN, tính tỷ trọng phần trăm nhóm hàng, xếp hạng Top chi tiêu |
 | **CSV Export & JSON Backup Merge** | 3 | ✅ PASS | Tiền tố UTF-8 BOM, cấu trúc file backup JSON, cơ chế Merge / Upsert an toàn |
 | **Secret-Zero Scanning Audit** | 1 | ✅ PASS | Quét toàn bộ repository, phát hiện 0 chuỗi mật khẩu/secret hardcode |
-| **TỔNG CỘNG** | **74** | **100% PASS** | **74/74 tests PASS hoàn hảo, không có lỗi tiềm ẩn** |
+| **TỔNG CỘNG** | **101** | **100% PASS** | **101/101 tests PASS hoàn hảo, 0 lỗi tiềm ẩn** |
 
 ---
 
-## 13. 🗺️ Lộ Trình Dự Án & Trạng Thái Nghiệm Thu 11 Bước
+## 14. 🗺️ Lộ Trình Dự Án & Trạng Thái Nghiệm Thu 11 Bước
 
 | Bước Quy Trình | Trọng Tâm Nghiệm Thu | Trạng Thái |
 | :---: | :--- | :---: |
-| **1. GRILL** | Phỏng vấn làm rõ toàn bộ yêu cầu Master Upgrade (Fresh & Free, Supplier, Unit, Excel, MB Bank) | ✅ **HOÀN THÀNH** |
-| **2. PLAN APPROVED** | Kế hoạch triển khai toàn diện được phê duyệt | ✅ **HOÀN THÀNH** |
-| **3. IMPLEMENT** | Hiện thực hóa toàn bộ 6 hạng mục nâng cấp | ✅ **HOÀN THÀNH** |
-| **4. TEST** | Xây dựng và thực thi bộ kiểm thử Unit & Integration mới | ✅ **HOÀN THÀNH** |
-| **5. FIX ↺** | Sửa triệt để các lỗi biên dịch, kiểu dữ liệu và regex boundary | ✅ **HOÀN THÀNH** |
-| **6. TEST PASS** | 74/74 tests tự động đạt 100% PASS | ✅ **HOÀN THÀNH** |
+| **1. GRILL** | Rà soát toàn bộ logic, phát hiện rủi ro UI/UX mobile, chốt 3 câu hỏi thiết kế | ✅ **HOÀN THÀNH** |
+| **2. PLAN APPROVED** | Kế hoạch chi tiết 5 nhiệm vụ được phê duyệt | ✅ **HOÀN THÀNH** |
+| **3. IMPLEMENT** | Hiện thực hóa backend, UI mobile pixel-perfect, điểm danh tiết kiệm, sắp xếp catalog | ✅ **HOÀN THÀNH** |
+| **4. TEST** | Xây dựng bộ kiểm thử mới cho Điểm danh tiết kiệm & Sắp xếp catalog | ✅ **HOÀN THÀNH** |
+| **5. FIX ↺** | Khắc phục triệt để lỗi biên dịch kiểu Mongoose và kiểu dữ liệu | ✅ **HOÀN THÀNH** |
+| **6. TEST PASS** | 101/101 tests tự động đạt 100% PASS | ✅ **HOÀN THÀNH** |
 | **7. AUDIT** | Kiểm toán UI/UX Galaxy A35 5G & Quét Secret-Zero 100% sạch | ✅ **HOÀN THÀNH** |
-| **8. HARDEN** | Thêm dynamic force, cấu hình ảnh VietQR, chống race condition | ✅ **HOÀN THÀNH** |
-| **9. REGRESSION PASS** | Bộ kiểm thử E2E Full Regression 23/23 tests đạt 100% PASS | ✅ **HOÀN THÀNH** |
-| **10. ACCEPTED** | Toàn bộ 6 hạng mục hoạt động hoàn hảo và sẵn sàng bàn giao | ✅ **HOÀN THÀNH** |
+| **8. HARDEN** | Tách module sub-components cho Catalog và MB Bank, tối ưu hóa kích thước gói | ✅ **HOÀN THÀNH** |
+| **9. REGRESSION PASS** | Bộ kiểm thử E2E Full Regression 30/30 tests (14 miền) đạt 100% PASS | ✅ **HOÀN THÀNH** |
+| **10. ACCEPTED** | Toàn bộ 4 nhiệm vụ hoạt động hoàn hảo và sẵn sàng bàn giao | ✅ **HOÀN THÀNH** |
 | **11. CLOSED** | Bàn giao tài liệu song ngữ và đóng chu trình nâng cấp | ✅ **HOÀN THÀNH** |

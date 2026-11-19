@@ -1,6 +1,6 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import { PurchaseLog } from "@/models/purchase-log.model";
-import { getTodayKey, getYesterdayKey, getMonthKey, getDateRange } from "@/lib/utils/date";
+import { getTodayKey, getYesterdayKey, getMonthKey, getDateRange, getEndOfMonthDateKey } from "@/lib/utils/date";
 
 export class ReportService {
   /**
@@ -18,6 +18,7 @@ export class ReportService {
     const yesterdayKey = getYesterdayKey();
     const currentMonthKey = getMonthKey();
     const selectedMonthKey = targetMonth || currentMonthKey;
+    const endOfMonthKey = getEndOfMonthDateKey(selectedMonthKey);
 
     const [todayAgg, yesterdayAgg, monthAgg] = await Promise.all([
       // 1. Chi tiêu hôm nay
@@ -51,7 +52,7 @@ export class ReportService {
           $match: {
             dateKey: {
               $gte: `${selectedMonthKey}-01`,
-              $lte: `${selectedMonthKey}-31`,
+              $lte: endOfMonthKey,
             },
           },
         },
@@ -97,13 +98,14 @@ export class ReportService {
     await connectToDatabase();
 
     const targetMonth = monthKey || getMonthKey();
+    const endOfMonthKey = getEndOfMonthDateKey(targetMonth);
 
     const dailyData = await PurchaseLog.aggregate([
       {
         $match: {
           dateKey: {
             $gte: `${targetMonth}-01`,
-            $lte: `${targetMonth}-31`,
+            $lte: endOfMonthKey,
           },
         },
       },
@@ -145,7 +147,7 @@ export class ReportService {
     if (!start && !end) {
       if (monthKey) {
         start = `${monthKey}-01`;
-        end = `${monthKey}-31`;
+        end = getEndOfMonthDateKey(monthKey);
       } else {
         const range = getDateRange("this_month");
         start = range.startDateKey;
@@ -208,7 +210,7 @@ export class ReportService {
     if (!start && !end) {
       if (monthKey) {
         start = `${monthKey}-01`;
-        end = `${monthKey}-31`;
+        end = getEndOfMonthDateKey(monthKey);
       } else {
         const range = getDateRange("this_month");
         start = range.startDateKey;

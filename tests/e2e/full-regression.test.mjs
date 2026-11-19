@@ -390,4 +390,75 @@ describe("Phase 4: Comprehensive E2E Full Regression & Quality Audit", () => {
       }
     });
   });
+
+  // --------------------------------------------------------------------------
+  // DOMAIN 12: DAILY SAVINGS CHECKIN FEATURE
+  // --------------------------------------------------------------------------
+  describe("12. Daily Savings Checkin & Streak Tracking", () => {
+    test("12.1. /savings page file exists and is registered in build routes", () => {
+      const savingsPage = path.resolve(process.cwd(), "src", "app", "savings", "page.tsx");
+      assert.ok(fs.existsSync(savingsPage), "src/app/savings/page.tsx must exist");
+      const content = fs.readFileSync(savingsPage, "utf-8");
+      assert.match(content, /tabular-nums/);
+      assert.match(content, /min-h-\[44px\]/);
+    });
+
+    test("12.2. SavingsCheckinWidget is integrated into homepage", () => {
+      const homePage = path.resolve(process.cwd(), "src", "app", "page.tsx");
+      const content = fs.readFileSync(homePage, "utf-8");
+      assert.match(content, /SavingsCheckinWidget/);
+    });
+
+    test("12.3. Mobile bottom navigation includes savings tab", () => {
+      const navPath = path.resolve(process.cwd(), "src", "components", "layout", "MobileBottomNav.tsx");
+      const content = fs.readFileSync(navPath, "utf-8");
+      assert.match(content, /href="\/savings"/);
+      assert.match(content, /Điểm danh/);
+    });
+
+    test("12.4. Desktop sidebar includes savings link", () => {
+      const sidePath = path.resolve(process.cwd(), "src", "components", "layout", "DesktopSidebar.tsx");
+      const content = fs.readFileSync(sidePath, "utf-8");
+      assert.match(content, /href:\s*"\/savings"|href="\/savings"/);
+      assert.match(content, /Điểm danh/);
+    });
+  });
+
+  // --------------------------------------------------------------------------
+  // DOMAIN 13: CATALOG SORTING & MOBILE 2-TIER CARDS
+  // --------------------------------------------------------------------------
+  describe("13. Catalog Sorting & Mobile 2-Tier Card Layout", () => {
+    test("13.1. CatalogToolbar contains sort options including usage, price and Vietnamese name", () => {
+      const toolbarPath = path.resolve(process.cwd(), "src", "components", "catalog", "CatalogToolbar.tsx");
+      assert.ok(fs.existsSync(toolbarPath), "CatalogToolbar must exist");
+      const content = fs.readFileSync(toolbarPath, "utf-8");
+      assert.match(content, /price_asc/);
+      assert.match(content, /price_desc/);
+      assert.match(content, /name_asc/);
+      assert.match(content, /name_desc/);
+    });
+
+    test("13.2. Homepage and History feature 2-tier card layout for mobile viewports", () => {
+      const homePage = path.resolve(process.cwd(), "src", "app", "page.tsx");
+      const historyPage = path.resolve(process.cwd(), "src", "app", "history", "page.tsx");
+      const homeContent = fs.readFileSync(homePage, "utf-8");
+      const historyContent = fs.readFileSync(historyPage, "utf-8");
+
+      assert.match(homeContent, /flex sm:hidden/);
+      assert.match(historyContent, /flex sm:hidden/);
+    });
+
+    test("13.3. Quantity input uses inputMode='decimal' across all forms", () => {
+      const forms = [
+        path.resolve(process.cwd(), "src", "components", "entry", "QuickSingleItemForm.tsx"),
+        path.resolve(process.cwd(), "src", "components", "entry", "BatchReceiptForm.tsx"),
+        path.resolve(process.cwd(), "src", "components", "entry", "EditPurchaseModal.tsx"),
+      ];
+
+      for (const formPath of forms) {
+        const content = fs.readFileSync(formPath, "utf-8");
+        assert.match(content, /inputMode="decimal"/, `${path.basename(formPath)} must have inputMode="decimal" on quantity`);
+      }
+    });
+  });
 });

@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingBag, Calendar, BarChart3, Plus, Landmark } from "lucide-react";
+import { ShoppingBag, Calendar, BarChart3, Plus, PiggyBank } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 interface MobileBottomNavProps {
@@ -14,13 +14,13 @@ export function MobileBottomNav({ onOpenQuickEntry }: MobileBottomNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#D8EFE9] pb-safe select-none shadow-[0_-4px_20px_rgba(16,185,129,0.06)]">
-      <div className="h-16 px-2 flex items-center justify-around relative max-w-lg mx-auto">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#D8EFE9] pb-[env(safe-area-inset-bottom)] select-none shadow-[0_-4px_20px_rgba(16,185,129,0.06)]">
+      <div className="h-16 px-1.5 flex items-center justify-around relative max-w-lg mx-auto">
         {/* Tab 1: Hôm nay */}
         <Link
           href="/"
           className={cn(
-            "flex flex-col items-center justify-center min-w-[56px] min-h-[44px] px-1 py-1 rounded-xl text-[11px] font-medium transition-colors",
+            "flex flex-col items-center justify-center min-w-[52px] min-h-[44px] px-1 py-1 rounded-xl text-[11px] font-medium transition-colors",
             pathname === "/"
               ? "text-emerald-700 font-bold"
               : "text-slate-400 hover:text-slate-600"
@@ -34,7 +34,7 @@ export function MobileBottomNav({ onOpenQuickEntry }: MobileBottomNavProps) {
         <Link
           href="/history"
           className={cn(
-            "flex flex-col items-center justify-center min-w-[56px] min-h-[44px] px-1 py-1 rounded-xl text-[11px] font-medium transition-colors",
+            "flex flex-col items-center justify-center min-w-[52px] min-h-[44px] px-1 py-1 rounded-xl text-[11px] font-medium transition-colors",
             pathname === "/history"
               ? "text-emerald-700 font-bold"
               : "text-slate-400 hover:text-slate-600"
@@ -44,7 +44,7 @@ export function MobileBottomNav({ onOpenQuickEntry }: MobileBottomNavProps) {
           <span>Sổ ngày</span>
         </Link>
 
-        {/* Nút trung tâm: + Ghi hàng (Cam Đào tươi sáng, ngay tầm ngón cái) */}
+        {/* Nút trung tâm: + Ghi hàng */}
         <div className="relative -top-4 flex items-center justify-center">
           <button
             onClick={onOpenQuickEntry}
@@ -55,11 +55,25 @@ export function MobileBottomNav({ onOpenQuickEntry }: MobileBottomNavProps) {
           </button>
         </div>
 
-        {/* Tab 4: Báo cáo */}
+        {/* Tab 4: Điểm danh tiết kiệm */}
+        <Link
+          href="/savings"
+          className={cn(
+            "flex flex-col items-center justify-center min-w-[52px] min-h-[44px] px-1 py-1 rounded-xl text-[11px] font-medium transition-colors",
+            pathname === "/savings"
+              ? "text-emerald-700 font-bold"
+              : "text-slate-400 hover:text-slate-600"
+          )}
+        >
+          <PiggyBank className="w-5 h-5 mb-0.5" />
+          <span>Điểm danh</span>
+        </Link>
+
+        {/* Tab 5: Báo cáo */}
         <Link
           href="/reports"
           className={cn(
-            "flex flex-col items-center justify-center min-w-[56px] min-h-[44px] px-1 py-1 rounded-xl text-[11px] font-medium transition-colors",
+            "flex flex-col items-center justify-center min-w-[52px] min-h-[44px] px-1 py-1 rounded-xl text-[11px] font-medium transition-colors",
             pathname === "/reports"
               ? "text-emerald-700 font-bold"
               : "text-slate-400 hover:text-slate-600"
@@ -67,20 +81,6 @@ export function MobileBottomNav({ onOpenQuickEntry }: MobileBottomNavProps) {
         >
           <BarChart3 className="w-5 h-5 mb-0.5" />
           <span>Báo cáo</span>
-        </Link>
-
-        {/* Tab 5: MB Bank (Xanh Trời) */}
-        <Link
-          href="/mb-bank"
-          className={cn(
-            "flex flex-col items-center justify-center min-w-[56px] min-h-[44px] px-1 py-1 rounded-xl text-[11px] font-medium transition-colors",
-            pathname === "/mb-bank"
-              ? "text-sky-600 font-bold"
-              : "text-slate-400 hover:text-slate-600"
-          )}
-        >
-          <Landmark className="w-5 h-5 mb-0.5" />
-          <span>MB Bank</span>
         </Link>
       </div>
     </nav>

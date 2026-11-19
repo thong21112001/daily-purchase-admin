@@ -12,6 +12,7 @@ import {
   LogOut,
   Coffee,
   Landmark,
+  PiggyBank,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/Button";
@@ -26,9 +27,10 @@ export function DesktopSidebar({ onOpenQuickEntry }: DesktopSidebarProps) {
   const navItems = [
     { label: "Hôm nay", href: "/", icon: ShoppingBag },
     { label: "Sổ theo ngày", href: "/history", icon: Calendar },
+    { label: "Điểm danh tiết kiệm", href: "/savings", icon: PiggyBank },
     { label: "Mặt hàng & Nơi mua", href: "/catalog", icon: Package },
     { label: "Báo cáo & Sao lưu", href: "/reports", icon: BarChart3 },
-    { label: "MB Bank", href: "/mb-bank", icon: Landmark },
+    { label: "MB Bank & Webhook", href: "/mb-bank", icon: Landmark },
   ];
 
   const handleLogout = async () => {
@@ -91,13 +93,14 @@ export function DesktopSidebar({ onOpenQuickEntry }: DesktopSidebarProps) {
       {/* Footer Info & Logout */}
       <div className="p-4 border-t border-[#D8EFE9] flex items-center justify-between bg-emerald-50/30">
         <div className="text-xs">
-          <span className="block font-semibold text-slate-800">Chủ quản trị</span>
+          <span className="block font-semibold text-slate-800">Chủ quán</span>
           <span className="text-[11px] text-emerald-600 font-mono">Phiên 90 ngày</span>
         </div>
         <button
           onClick={handleLogout}
           title="Đăng xuất"
           className="min-h-[44px] min-w-[44px] p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center cursor-pointer transition-colors"
+          aria-label="Đăng xuất"
         >
           <LogOut className="w-4 h-4" />
         </button>

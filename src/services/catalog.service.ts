@@ -12,7 +12,8 @@ export interface CreateCatalogItemDTO {
 
 export interface CatalogQueryOptions {
   category?: string;
-  sort?: "usage" | "price_asc" | "price_desc" | "name" | "recent";
+  query?: string;
+  sort?: "usage" | "price_asc" | "price_desc" | "name" | "name_asc" | "name_desc" | "recent";
   page?: number;
   limit?: number;
 }
@@ -60,7 +61,7 @@ export class CatalogService {
   }
 
   /**
-   * Lấy danh sách toàn bộ danh mục mặt hàng có phân trang & lọc theo nhóm
+   * Lấy danh sách toàn bộ danh mục mặt hàng có phân trang, tìm kiếm & sắp xếp đa năng
    */
   static async getCatalogItems(options: CatalogQueryOptions = {}) {
     await connectToDatabase();
@@ -69,20 +70,97 @@ export class CatalogService {
     const limit = Math.min(100, Math.max(1, options.limit || 50));
     const skip = (page - 1) * limit;
 
-    const query: Record<string, any> = {};
+    const matchFilter: Record<string, any> = {};
     if (options.category && options.category !== "Tất cả") {
-      query.category = options.category;
+      matchFilter.category = options.category;
     }
 
-    let sortOptions: Record<string, 1 | -1> = { usageCount: -1, updatedAt: -1 };
-    if (options.sort === "recent") sortOptions = { updatedAt: -1 };
-    else if (options.sort === "price_asc") sortOptions = { lastUnitPrice: 1 };
-    else if (options.sort === "price_desc") sortOptions = { lastUnitPrice: -1 };
-    else if (options.sort === "name") sortOptions = { name: 1 };
+    if (options.query && options.query.trim()) {
+      const norm = normalizeVietnamese(options.query.trim());
+      matchFilter.normalizedName = { $regex: norm, $options: "i" };
+    }
+
+    const sortType = options.sort || "usage";
+
+    // Trường hợp 1: Sắp xếp theo giá (Mặt hàng chưa có giá / giá = 0 luôn xuống cuối)
+    if (sortType === "price_asc" || sortType === "price_desc") {
+      const priceSortDirection = sortType === "price_asc" ? 1 : -1;
+
+      const pipeline: any[] = [
+        { $match: matchFilter },
+        {
+          $addFields: {
+            // zeroPriceFlag: 0 nếu có giá > 0, 1 nếu không có giá (đẩy xuống sau)
+            zeroPriceFlag: {
+              $cond: [{ $gt: ["$lastUnitPrice", 0] }, 0, 1],
+            },
+          },
+        },
+        {
+          $sort: {
+            zeroPriceFlag: 1,
+            lastUnitPrice: priceSortDirection,
+            usageCount: -1,
+            _id: -1,
+          },
+        },
+        {
+          $facet: {
+            metadata: [{ $count: "totalCount" }],
+            data: [{ $skip: skip }, { $limit: limit }],
+          },
+        },
+      ];
+
+      const [result] = await CatalogItem.aggregate(pipeline);
+      const totalCount = result?.metadata?.[0]?.totalCount || 0;
+      const items = result?.data || [];
+
+      return {
+        items,
+        pagination: {
+          page,
+          limit,
+          totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+        },
+      };
+    }
+
+    // Trường hợp 2: Sắp xếp theo Tên tiếng Việt (Collation vi chuẩn)
+    if (sortType === "name" || sortType === "name_asc" || sortType === "name_desc") {
+      const direction: 1 | -1 = sortType === "name_desc" ? -1 : 1;
+
+      const [items, totalCount] = await Promise.all([
+        CatalogItem.find(matchFilter)
+          .collation({ locale: "vi", strength: 1 })
+          .sort({ name: direction, _id: 1 })
+          .skip(skip)
+          .limit(limit)
+          .lean(),
+        CatalogItem.countDocuments(matchFilter),
+      ]);
+
+      return {
+        items,
+        pagination: {
+          page,
+          limit,
+          totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+        },
+      };
+    }
+
+    // Trường hợp 3: Mặc định (hay dùng nhất) hoặc mới cập nhật gần nhất
+    let sortOptions: Record<string, 1 | -1> = { usageCount: -1, updatedAt: -1, _id: -1 };
+    if (sortType === "recent") {
+      sortOptions = { updatedAt: -1, _id: -1 };
+    }
 
     const [items, totalCount] = await Promise.all([
-      CatalogItem.find(query).sort(sortOptions).skip(skip).limit(limit).lean(),
-      CatalogItem.countDocuments(query),
+      CatalogItem.find(matchFilter).sort(sortOptions).skip(skip).limit(limit).lean(),
+      CatalogItem.countDocuments(matchFilter),
     ]);
 
     return {

@@ -329,6 +329,7 @@ export function QuickSingleItemForm({ onSuccess, onCancel }: QuickSingleItemForm
                 type="number"
                 step="any"
                 min="0.01"
+                inputMode="decimal"
                 value={quantity}
                 onChange={(e) => handleQtyChange(parseFloat(e.target.value) || 0)}
                 className="flex-1 min-h-[44px] h-11 px-3.5 rounded-xl border border-[#D8EFE9] bg-white text-slate-900 font-mono tabular-nums text-base font-bold text-center focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"

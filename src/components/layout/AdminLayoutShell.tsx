@@ -36,7 +36,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
         setTodayTotal(json.data.kpis.today.totalAmount || 0);
       }
     } catch {
-      // Bỏ qua lỗi ngầm khi mạng chập chờn
+      // Ignore network errors
     } finally {
       setIsRefreshing(false);
     }
@@ -59,35 +59,35 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
         refreshTick,
       }}
     >
-        <div className="min-h-screen bg-[#F4FBF9] text-slate-900 flex flex-col lg:flex-row w-full max-w-full overflow-x-hidden">
-          {/* 1. Sidebar cố định trên Desktop (w-64) */}
-          <DesktopSidebar onOpenQuickEntry={() => setIsQuickEntryOpen(true)} />
+      <div className="min-h-screen bg-[#F4FBF9] text-slate-900 flex flex-col lg:flex-row w-full max-w-full overflow-x-hidden">
+        {/* 1. Sidebar fixed on Desktop (w-64) */}
+        <DesktopSidebar onOpenQuickEntry={() => setIsQuickEntryOpen(true)} />
 
-          {/* 2. Khung nội dung chính */}
-          <div className="flex-1 lg:pl-64 flex flex-col min-h-screen w-full max-w-full pb-24 lg:pb-8">
-            {/* Header di động mỏng (Galaxy A35 5G) */}
-            <MobileTopHeader
-              todayTotal={todayTotal}
-              onRefresh={fetchTodayTotal}
-              isRefreshing={isRefreshing}
-            />
-
-            {/* Vùng nội dung các trang căn giữa gọn gàng */}
-            <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 overscroll-none">
-              {children}
-            </main>
-          </div>
-
-          {/* 3. Thanh điều hướng đáy di động (h-16, pb-safe) */}
-          <MobileBottomNav onOpenQuickEntry={() => setIsQuickEntryOpen(true)} />
-
-          {/* 4. Drawer Nhập Hàng Siêu Tốc */}
-          <QuickEntryDrawer
-            isOpen={isQuickEntryOpen}
-            onClose={() => setIsQuickEntryOpen(false)}
-            onRefreshData={triggerRefresh}
+        {/* 2. Main content area */}
+        <div className="flex-1 lg:pl-64 flex flex-col min-h-screen w-full max-w-full pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-8">
+          {/* Header mobile (Galaxy A35 5G) */}
+          <MobileTopHeader
+            todayTotal={todayTotal}
+            onRefresh={fetchTodayTotal}
+            isRefreshing={isRefreshing}
           />
+
+          {/* Centered responsive main container */}
+          <main className="flex-1 w-full max-w-5xl mx-auto px-3.5 sm:px-6 py-4 sm:py-6 overscroll-none">
+            {children}
+          </main>
         </div>
-      </LayoutContext.Provider>
+
+        {/* 3. Bottom nav mobile (h-16, pb-safe) */}
+        <MobileBottomNav onOpenQuickEntry={() => setIsQuickEntryOpen(true)} />
+
+        {/* 4. Quick Entry Drawer */}
+        <QuickEntryDrawer
+          isOpen={isQuickEntryOpen}
+          onClose={() => setIsQuickEntryOpen(false)}
+          onRefreshData={triggerRefresh}
+        />
+      </div>
+    </LayoutContext.Provider>
   );
 }

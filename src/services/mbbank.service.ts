@@ -178,8 +178,16 @@ export class MBBankService {
     let transactionDate = new Date();
     const rawDate = payload.transactionDate || payload.when || payload.createdAt;
     if (rawDate) {
-      const d = new Date(rawDate);
-      if (!isNaN(d.getTime())) transactionDate = d;
+      const rawDateStr = String(rawDate).trim();
+      // Nếu chuỗi ngày dạng "YYYY-MM-DD HH:mm:ss" hoặc "YYYY-MM-DDTHH:mm:ss" chưa có offset múi giờ
+      if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?$/.test(rawDateStr)) {
+        const iso = rawDateStr.replace(" ", "T") + (rawDateStr.length === 16 ? ":00+07:00" : "+07:00");
+        const d = new Date(iso);
+        if (!isNaN(d.getTime())) transactionDate = d;
+      } else {
+        const d = new Date(rawDate);
+        if (!isNaN(d.getTime())) transactionDate = d;
+      }
     }
 
     const dateKey = getDateKey(transactionDate);

@@ -347,6 +347,7 @@ export function BatchReceiptForm({ onSuccess, onCancel }: BatchReceiptFormProps)
                       type="number"
                       step="any"
                       min="0.01"
+                      inputMode="decimal"
                       value={row.quantity}
                       onChange={(e) =>
                         handleUpdateItem(row.id, "quantity", parseFloat(e.target.value) || 0)

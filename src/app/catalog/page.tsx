@@ -5,16 +5,14 @@ import { AdminLayoutShell } from "@/components/layout/AdminLayoutShell";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Modal } from "@/components/ui/Modal";
 import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
-import { CustomSelect } from "@/components/ui/CustomSelect";
 import { useToast } from "@/components/ui/Toast";
-import { formatVND, parseVND } from "@/lib/utils/currency";
-import { DEFAULT_PURCHASE_CATEGORIES, COMMON_UNITS } from "@/lib/constants/categories";
+import { formatVND } from "@/lib/utils/currency";
 import {
   Package,
   Plus,
   Search,
+  X,
   Edit2,
   Trash2,
   TrendingDown,
@@ -23,38 +21,20 @@ import {
   Store,
   Calendar,
 } from "lucide-react";
-
-interface CatalogItemData {
-  _id: string;
-  name: string;
-  normalizedName: string;
-  category: string;
-  defaultUnit: string;
-  lastUnitPrice: number;
-  minUnitPrice?: number;
-  maxUnitPrice?: number;
-  usageCount: number;
-  updatedAt: string;
-}
-
-interface SupplierData {
-  _id: string;
-  name: string;
-  normalizedName: string;
-  category?: string;
-  note?: string;
-  usageCount: number;
-  lastUsedAt?: string;
-}
-
-const SUPPLIER_CATEGORIES = [
-  "Chợ",
-  "Siêu thị",
-  "Đại lý",
-  "Tạp hóa",
-  "Online",
-  "Khác",
-];
+import {
+  CatalogToolbar,
+  CatalogSortOption,
+} from "@/components/catalog/CatalogToolbar";
+import {
+  CatalogItemModal,
+  CatalogItemData,
+  CatalogItemPayload,
+} from "@/components/catalog/CatalogItemModal";
+import {
+  SupplierModal,
+  SupplierData,
+  SupplierPayload,
+} from "@/components/catalog/SupplierModal";
 
 function CatalogContent() {
   const { showToast } = useToast();
@@ -65,18 +45,15 @@ function CatalogContent() {
   const [items, setItems] = useState<CatalogItemData[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("Tất cả");
   const [itemSearchQuery, setItemSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<CatalogSortOption>("usage");
   const [isItemsLoading, setIsItemsLoading] = useState(true);
 
   // Item Modal State
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<CatalogItemData | null>(null);
-  const [formItemName, setFormItemName] = useState("");
-  const [formItemCategory, setFormItemCategory] = useState("Nguyên liệu Cà phê & Trà");
-  const [formItemUnit, setFormItemUnit] = useState("kg");
-  const [formItemPrice, setFormItemPrice] = useState("");
   const [isItemSubmitting, setIsItemSubmitting] = useState(false);
 
-  // Total Counts for Tabs (luôn hiển thị chuẩn từ đầu)
+  // Total Counts
   const [totalItemsCount, setTotalItemsCount] = useState<number>(0);
   const [totalSuppliersCount, setTotalSuppliersCount] = useState<number>(0);
 
@@ -88,9 +65,6 @@ function CatalogContent() {
   // Supplier Modal State
   const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<SupplierData | null>(null);
-  const [formSupplierName, setFormSupplierName] = useState("");
-  const [formSupplierCategory, setFormSupplierCategory] = useState("Chợ");
-  const [formSupplierNote, setFormSupplierNote] = useState("");
   const [isSupplierSubmitting, setIsSupplierSubmitting] = useState(false);
 
   // Delete State
@@ -113,29 +87,33 @@ function CatalogContent() {
         setTotalSuppliersCount(suppliersJson.pagination.totalCount);
       }
     } catch {
-      // Bỏ qua lỗi ngầm
+      // Ignore background errors
     }
   }, []);
 
-  // Load Catalog Items
+  // Load Catalog Items with Sort
   const loadCatalog = useCallback(async () => {
     setIsItemsLoading(true);
     try {
       const params = new URLSearchParams();
       if (itemSearchQuery.trim()) {
         params.set("q", itemSearchQuery.trim());
-      } else {
-        if (selectedCategory !== "Tất cả") {
-          params.set("category", selectedCategory);
-        }
-        params.set("limit", "100");
       }
+      if (selectedCategory !== "Tất cả") {
+        params.set("category", selectedCategory);
+      }
+      params.set("sort", sortBy);
+      params.set("limit", "100");
 
       const res = await fetch(`/api/catalog?${params.toString()}`);
       const json = await res.json();
       if (json.success) {
         setItems(json.data || []);
-        if (!itemSearchQuery.trim() && selectedCategory === "Tất cả" && json.pagination?.totalCount !== undefined) {
+        if (
+          !itemSearchQuery.trim() &&
+          selectedCategory === "Tất cả" &&
+          json.pagination?.totalCount !== undefined
+        ) {
           setTotalItemsCount(json.pagination.totalCount);
         }
       }
@@ -144,7 +122,7 @@ function CatalogContent() {
     } finally {
       setIsItemsLoading(false);
     }
-  }, [itemSearchQuery, selectedCategory, showToast]);
+  }, [itemSearchQuery, selectedCategory, sortBy, showToast]);
 
   // Load Suppliers
   const loadSuppliers = useCallback(async () => {
@@ -170,69 +148,17 @@ function CatalogContent() {
     }
   }, [supplierSearchQuery, showToast]);
 
-  // Load ban đầu cho CẢ HAI tab ngay khi mount để số lượng luôn chính xác
+  // Initial load
   useEffect(() => {
     fetchTotalCounts();
     loadCatalog();
     loadSuppliers();
   }, [fetchTotalCounts, loadCatalog, loadSuppliers]);
 
-  // Debounced search cho Mặt hàng
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      loadCatalog();
-    }, 200);
-    return () => clearTimeout(timer);
-  }, [loadCatalog]);
-
-  // Debounced search cho Nơi mua
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      loadSuppliers();
-    }, 200);
-    return () => clearTimeout(timer);
-  }, [loadSuppliers]);
-
   // Handlers for Items
-  const handleOpenAddItemModal = () => {
-    setEditingItem(null);
-    setFormItemName("");
-    setFormItemCategory("Nguyên liệu Cà phê & Trà");
-    setFormItemUnit("kg");
-    setFormItemPrice("");
-    setIsItemModalOpen(true);
-  };
-
-  const handleOpenEditItemModal = (item: CatalogItemData) => {
-    setEditingItem(item);
-    setFormItemName(item.name);
-    setFormItemCategory(item.category || "Khác");
-    setFormItemUnit(item.defaultUnit || "kg");
-    setFormItemPrice(item.lastUnitPrice ? formatVND(item.lastUnitPrice) : "");
-    setIsItemModalOpen(true);
-  };
-
-  const handleSaveItem = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formItemName.trim()) {
-      showToast("Vui lòng nhập tên mặt hàng", "error");
-      return;
-    }
-    if (!formItemUnit.trim()) {
-      showToast("Vui lòng nhập đơn vị tính", "error");
-      return;
-    }
-
+  const handleSaveItem = async (payload: CatalogItemPayload): Promise<boolean> => {
     setIsItemSubmitting(true);
     try {
-      const priceNum = formItemPrice ? parseVND(formItemPrice) : 0;
-      const payload = {
-        name: formItemName.trim(),
-        category: formItemCategory,
-        defaultUnit: formItemUnit.trim(),
-        lastUnitPrice: priceNum,
-      };
-
       let res;
       if (editingItem) {
         res = await fetch(`/api/catalog/${editingItem._id}`, {
@@ -251,14 +177,16 @@ function CatalogContent() {
       const json = await res.json();
       if (json.success) {
         showToast(editingItem ? "Đã cập nhật mặt hàng" : "Đã thêm mặt hàng mới", "success");
-        setIsItemModalOpen(false);
         loadCatalog();
         fetchTotalCounts();
+        return true;
       } else {
         showToast(json.message || "Lưu thất bại", "error");
+        return false;
       }
     } catch {
       showToast("Lỗi kết nối khi lưu", "error");
+      return false;
     } finally {
       setIsItemSubmitting(false);
     }
@@ -301,37 +229,9 @@ function CatalogContent() {
   };
 
   // Handlers for Suppliers
-  const handleOpenAddSupplierModal = () => {
-    setEditingSupplier(null);
-    setFormSupplierName("");
-    setFormSupplierCategory("Chợ");
-    setFormSupplierNote("");
-    setIsSupplierModalOpen(true);
-  };
-
-  const handleOpenEditSupplierModal = (sup: SupplierData) => {
-    setEditingSupplier(sup);
-    setFormSupplierName(sup.name);
-    setFormSupplierCategory(sup.category || "Chợ");
-    setFormSupplierNote(sup.note || "");
-    setIsSupplierModalOpen(true);
-  };
-
-  const handleSaveSupplier = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formSupplierName.trim()) {
-      showToast("Vui lòng nhập tên nơi mua / nhà cung cấp", "error");
-      return;
-    }
-
+  const handleSaveSupplier = async (payload: SupplierPayload): Promise<boolean> => {
     setIsSupplierSubmitting(true);
     try {
-      const payload = {
-        name: formSupplierName.trim(),
-        category: formSupplierCategory,
-        note: formSupplierNote.trim(),
-      };
-
       let res;
       if (editingSupplier) {
         res = await fetch(`/api/suppliers/${editingSupplier._id}`, {
@@ -350,14 +250,16 @@ function CatalogContent() {
       const json = await res.json();
       if (json.success) {
         showToast(editingSupplier ? "Đã cập nhật nơi mua" : "Đã thêm nơi mua mới", "success");
-        setIsSupplierModalOpen(false);
         loadSuppliers();
         fetchTotalCounts();
+        return true;
       } else {
         showToast(json.message || "Lưu thất bại", "error");
+        return false;
       }
     } catch {
       showToast("Lỗi kết nối khi lưu", "error");
+      return false;
     } finally {
       setIsSupplierSubmitting(false);
     }
@@ -387,19 +289,19 @@ function CatalogContent() {
 
   return (
     <div className="space-y-5">
-      {/* Header & Chuyển Tab Mặt hàng / Nơi mua */}
+      {/* Header & Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#D8EFE9] pb-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 truncate">
             Mặt Hàng & Nơi Mua
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Tự động học từ các lần ghi hàng. Quản lý danh mục, lịch sử giá và nhà cung cấp
+            Quản lý danh mục, đơn giá tham khảo và lịch sử nơi mua
           </p>
         </div>
 
-        {/* Tab switcher */}
-        <div className="flex items-center gap-2">
+        {/* Tab switcher & Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex rounded-xl bg-slate-100 p-1 border border-[#D8EFE9]">
             <button
               type="button"
@@ -439,8 +341,11 @@ function CatalogContent() {
               </Button>
               <Button
                 size="sm"
-                onClick={handleOpenAddItemModal}
-                className="min-h-[44px] px-3.5 text-xs font-semibold gap-1.5"
+                onClick={() => {
+                  setEditingItem(null);
+                  setIsItemModalOpen(true);
+                }}
+                className="min-h-[44px] px-3.5 text-xs font-semibold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Thêm món</span>
@@ -449,8 +354,11 @@ function CatalogContent() {
           ) : (
             <Button
               size="sm"
-              onClick={handleOpenAddSupplierModal}
-              className="min-h-[44px] px-3.5 text-xs font-semibold gap-1.5"
+              onClick={() => {
+                setEditingSupplier(null);
+                setIsSupplierModalOpen(true);
+              }}
+              className="min-h-[44px] px-3.5 text-xs font-semibold gap-1.5 bg-sky-600 hover:bg-sky-700 text-white"
             >
               <Plus className="w-4 h-4" />
               <span>+ Thêm nơi mua</span>
@@ -462,39 +370,16 @@ function CatalogContent() {
       {/* ================= TAB 1: MẶT HÀNG ================= */}
       {activeTab === "items" && (
         <div className="space-y-4">
-          {/* Thanh tìm kiếm & Nhóm danh mục */}
-          <div className="space-y-3">
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              <input
-                type="text"
-                value={itemSearchQuery}
-                onChange={(e) => setItemSearchQuery(e.target.value)}
-                placeholder="Tìm mặt hàng theo tên không dấu (VD: 'robusta', 'sua dac', 'ly nhua')..."
-                className="w-full h-11 pl-10 pr-4 text-base rounded-xl border border-[#D8EFE9] bg-white text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-colors"
-              />
-            </div>
+          <CatalogToolbar
+            searchQuery={itemSearchQuery}
+            onSearchChange={setItemSearchQuery}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+          />
 
-            {/* Dãy chip nhóm hàng */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-              {["Tất cả", ...DEFAULT_PURCHASE_CATEGORIES].map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`min-h-[44px] px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-colors shrink-0 ${
-                    selectedCategory === cat
-                      ? "bg-emerald-600 text-white font-semibold shadow-xs"
-                      : "bg-white text-slate-600 border border-[#D8EFE9] hover:bg-emerald-50/60"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Danh sách mặt hàng */}
+          {/* Items Grid */}
           {isItemsLoading ? (
             <div className="py-16 text-center space-y-3">
               <div className="w-6 h-6 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin mx-auto" />
@@ -504,17 +389,22 @@ function CatalogContent() {
             <Card className="border-dashed border-2 border-[#D8EFE9] p-8 text-center bg-white">
               <div className="max-w-xs mx-auto space-y-3">
                 <Package className="w-10 h-10 text-emerald-400 mx-auto" />
-                <h3 className="text-sm font-semibold text-slate-900">
-                  Chưa có mặt hàng nào
-                </h3>
+                <h3 className="text-sm font-semibold text-slate-900">Chưa có mặt hàng nào</h3>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Mặt hàng sẽ tự động được ghi nhận khi bạn lưu phiếu mua, hoặc bạn có thể nạp nhanh bộ mẫu cà phê.
+                  Mặt hàng sẽ tự động được ghi nhận khi bạn lưu phiếu mua, hoặc nạp nhanh bộ mẫu cà phê.
                 </p>
                 <div className="flex items-center justify-center gap-2 pt-2">
                   <Button onClick={handleSeedStarters} size="sm" variant="outline" className="min-h-[44px]">
                     Nạp mẫu cà phê
                   </Button>
-                  <Button onClick={handleOpenAddItemModal} size="sm" className="min-h-[44px]">
+                  <Button
+                    onClick={() => {
+                      setEditingItem(null);
+                      setIsItemModalOpen(true);
+                    }}
+                    size="sm"
+                    className="min-h-[44px]"
+                  >
                     + Thêm thủ công
                   </Button>
                 </div>
@@ -527,9 +417,9 @@ function CatalogContent() {
                   key={item._id}
                   className="border border-[#D8EFE9] bg-white p-3.5 flex flex-col justify-between space-y-3 hover:border-emerald-300 shadow-xs transition-colors"
                 >
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-semibold text-xs sm:text-sm text-slate-900 line-clamp-2">
+                      <h3 className="font-semibold text-xs sm:text-sm text-slate-900 line-clamp-2 break-words">
                         {item.name}
                       </h3>
                       <Badge variant="mint" size="sm" className="text-[10px] shrink-0 font-medium">
@@ -541,12 +431,12 @@ function CatalogContent() {
                     </Badge>
                   </div>
 
-                  {/* Biến động giá */}
+                  {/* Giá tham khảo & biến động */}
                   <div className="bg-emerald-50/40 rounded-xl p-2.5 border border-[#D8EFE9] space-y-1">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-slate-500 text-[11px]">Giá gần nhất:</span>
                       <span className="font-mono tabular-nums font-bold text-emerald-800">
-                        {formatVND(item.lastUnitPrice || 0)}
+                        {item.lastUnitPrice > 0 ? formatVND(item.lastUnitPrice) : "Chưa có giá"}
                       </span>
                     </div>
 
@@ -564,7 +454,7 @@ function CatalogContent() {
                     )}
                   </div>
 
-                  {/* Footer card: số lần mua & thao tác */}
+                  {/* Footer card */}
                   <div className="flex items-center justify-between pt-1 border-t border-[#D8EFE9] text-xs">
                     <span className="text-[11px] text-slate-400 font-mono tabular-nums">
                       Đã mua: {item.usageCount} lần
@@ -573,20 +463,23 @@ function CatalogContent() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleOpenEditItemModal(item)}
-                        className="h-8 w-8 p-0 text-slate-400 hover:text-slate-900 hover:bg-slate-100"
+                        onClick={() => {
+                          setEditingItem(item);
+                          setIsItemModalOpen(true);
+                        }}
+                        className="h-9 w-9 p-0 text-slate-400 hover:text-slate-900 hover:bg-slate-100"
                         title="Sửa mặt hàng"
                       >
-                        <Edit2 className="w-3.5 h-3.5" />
+                        <Edit2 className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setDeleteItemTarget(item)}
-                        className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                        className="h-9 w-9 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
                         title="Xóa mặt hàng"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
@@ -600,19 +493,28 @@ function CatalogContent() {
       {/* ================= TAB 2: NƠI MUA (SUPPLIERS) ================= */}
       {activeTab === "suppliers" && (
         <div className="space-y-4">
-          {/* Thanh tìm kiếm Nơi mua */}
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
               type="text"
               value={supplierSearchQuery}
               onChange={(e) => setSupplierSearchQuery(e.target.value)}
-              placeholder="Tìm nơi mua theo tên (VD: 'cho dau moi', 'bach hoa xanh', 'vinmart')..."
-              className="w-full h-11 pl-10 pr-4 text-base rounded-xl border border-[#D8EFE9] bg-white text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-colors"
+              placeholder="Tìm nơi mua theo tên (chợ, bách hóa xanh, vinmart...)"
+              className="w-full h-11 pl-10 pr-10 text-base rounded-xl border border-[#D8EFE9] bg-white text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-colors"
             />
+            {supplierSearchQuery && (
+              <button
+                type="button"
+                onClick={() => setSupplierSearchQuery("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+                title="Xóa tìm kiếm"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
-          {/* Danh sách nơi mua */}
+          {/* Suppliers Grid */}
           {isSuppliersLoading ? (
             <div className="py-16 text-center space-y-3">
               <div className="w-6 h-6 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin mx-auto" />
@@ -622,13 +524,18 @@ function CatalogContent() {
             <Card className="border-dashed border-2 border-[#D8EFE9] p-8 text-center bg-white">
               <div className="max-w-xs mx-auto space-y-3">
                 <Store className="w-10 h-10 text-sky-400 mx-auto" />
-                <h3 className="text-sm font-semibold text-slate-900">
-                  Chưa có nơi mua nào
-                </h3>
+                <h3 className="text-sm font-semibold text-slate-900">Chưa có nơi mua nào</h3>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Hệ thống tự động lưu lại nơi mua mỗi khi bạn nhập phiếu mua hàng, hoặc bạn có thể tự thêm trước.
+                  Hệ thống tự động lưu lại nơi mua mỗi khi bạn nhập phiếu mua hàng, hoặc thêm thủ công trước.
                 </p>
-                <Button onClick={handleOpenAddSupplierModal} size="sm" className="min-h-[44px]">
+                <Button
+                  onClick={() => {
+                    setEditingSupplier(null);
+                    setIsSupplierModalOpen(true);
+                  }}
+                  size="sm"
+                  className="min-h-[44px]"
+                >
                   + Thêm nơi mua mới
                 </Button>
               </div>
@@ -640,7 +547,7 @@ function CatalogContent() {
                   key={sup._id}
                   className="border border-[#D8EFE9] bg-white p-3.5 flex flex-col justify-between space-y-3 hover:border-sky-300 shadow-xs transition-colors"
                 >
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <Store className="w-4 h-4 text-sky-600 shrink-0" />
@@ -653,13 +560,12 @@ function CatalogContent() {
                       </Badge>
                     </div>
                     {sup.note && (
-                      <p className="text-xs text-slate-500 italic line-clamp-2">
+                      <p className="text-xs text-slate-500 italic line-clamp-2 break-words">
                         {sup.note}
                       </p>
                     )}
                   </div>
 
-                  {/* Thông tin số lần mua & lần mua gần nhất */}
                   <div className="bg-sky-50/50 rounded-xl p-2.5 border border-sky-100 space-y-1 text-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 text-[11px]">Đã mua:</span>
@@ -680,25 +586,27 @@ function CatalogContent() {
                     )}
                   </div>
 
-                  {/* Footer card: thao tác */}
                   <div className="flex items-center justify-end pt-1 border-t border-[#D8EFE9] gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleOpenEditSupplierModal(sup)}
-                      className="h-8 w-8 p-0 text-slate-400 hover:text-slate-900 hover:bg-slate-100"
+                      onClick={() => {
+                        setEditingSupplier(sup);
+                        setIsSupplierModalOpen(true);
+                      }}
+                      className="h-9 w-9 p-0 text-slate-400 hover:text-slate-900 hover:bg-slate-100"
                       title="Sửa nơi mua"
                     >
-                      <Edit2 className="w-3.5 h-3.5" />
+                      <Edit2 className="w-4 h-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setDeleteSupplierTarget(sup)}
-                      className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                      className="h-9 w-9 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
                       title="Xóa nơi mua"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </Card>
@@ -708,168 +616,23 @@ function CatalogContent() {
         </div>
       )}
 
-      {/* Modal Thêm / Chỉnh Sửa Mặt Hàng */}
-      <Modal
+      {/* Modals */}
+      <CatalogItemModal
         isOpen={isItemModalOpen}
         onClose={() => setIsItemModalOpen(false)}
-        title={editingItem ? "Chỉnh sửa mặt hàng" : "Thêm mặt hàng mới"}
-        description="Thiết lập tên gọi, nhóm và đơn vị đo mặc định"
-      >
-        <form onSubmit={handleSaveItem} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Tên mặt hàng <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={formItemName}
-              onChange={(e) => setFormItemName(e.target.value)}
-              placeholder="VD: Cà phê Robusta Mộc, Sữa tươi thanh trùng..."
-              className="w-full h-11 px-3 text-base rounded-xl border border-[#D8EFE9] bg-white text-slate-900 focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-            />
-          </div>
+        onSave={handleSaveItem}
+        editingItem={editingItem}
+        isLoading={isItemSubmitting}
+      />
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Nhóm danh mục
-            </label>
-            <CustomSelect
-              value={formItemCategory}
-              onChange={(e) => setFormItemCategory(e.target.value)}
-              options={DEFAULT_PURCHASE_CATEGORIES.map((c) => ({ label: c, value: c }))}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Đơn vị tính <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={formItemUnit}
-                onChange={(e) => setFormItemUnit(e.target.value)}
-                placeholder="kg, hộp, thùng..."
-                className="w-full h-11 px-3 text-base rounded-xl border border-[#D8EFE9] bg-white text-slate-900 focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Đơn giá tham khảo (VNĐ)
-              </label>
-              <input
-                type="text"
-                value={formItemPrice}
-                onChange={(e) => {
-                  const raw = e.target.value;
-                  const num = parseVND(raw);
-                  setFormItemPrice(num > 0 ? formatVND(num) : raw);
-                }}
-                placeholder="VD: 150.000"
-                className="w-full h-11 px-3 text-base font-mono tabular-nums rounded-xl border border-[#D8EFE9] bg-white text-slate-900 focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-              />
-            </div>
-          </div>
-
-          {/* Gợi ý đơn vị nhanh */}
-          <div>
-            <span className="text-[11px] text-slate-400 block mb-1">Chọn nhanh đơn vị:</span>
-            <div className="flex flex-wrap gap-1.5">
-              {COMMON_UNITS.slice(0, 8).map((u) => (
-                <button
-                  key={u}
-                  type="button"
-                  onClick={() => setFormItemUnit(u)}
-                  className="min-h-[44px] px-2.5 py-1 text-xs rounded-lg border border-[#D8EFE9] hover:bg-emerald-50 text-slate-700 transition-colors"
-                >
-                  {u}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="pt-3 border-t border-[#D8EFE9] flex items-center justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsItemModalOpen(false)}
-              className="min-h-[44px]"
-            >
-              Hủy
-            </Button>
-            <Button type="submit" loading={isItemSubmitting} className="min-h-[44px] px-5">
-              {editingItem ? "Lưu thay đổi" : "Tạo mặt hàng"}
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Modal Thêm / Chỉnh Sửa Nơi Mua */}
-      <Modal
+      <SupplierModal
         isOpen={isSupplierModalOpen}
         onClose={() => setIsSupplierModalOpen(false)}
-        title={editingSupplier ? "Chỉnh sửa nơi mua" : "Thêm nơi mua mới"}
-        description="Thông tin địa điểm hoặc nhà cung cấp mua hàng thường xuyên"
-      >
-        <form onSubmit={handleSaveSupplier} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Tên nơi mua / Nhà cung cấp <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={formSupplierName}
-              onChange={(e) => setFormSupplierName(e.target.value)}
-              placeholder="VD: Chợ Đầu Mối Hòa Cường, Bách Hóa Xanh, VinMart..."
-              className="w-full h-11 px-3 text-base rounded-xl border border-[#D8EFE9] bg-white text-slate-900 focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-            />
-          </div>
+        onSave={handleSaveSupplier}
+        editingSupplier={editingSupplier}
+        isLoading={isSupplierSubmitting}
+      />
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Phân loại nơi mua
-            </label>
-            <CustomSelect
-              value={formSupplierCategory}
-              onChange={(e) => setFormSupplierCategory(e.target.value)}
-              options={SUPPLIER_CATEGORIES.map((c) => ({ label: c, value: c }))}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Ghi chú địa chỉ / người liên hệ
-            </label>
-            <textarea
-              rows={3}
-              value={formSupplierNote}
-              onChange={(e) => setFormSupplierNote(e.target.value)}
-              placeholder="VD: Quầy cô Lan, SĐT: 0905xxx, giao hàng buổi sáng..."
-              className="w-full p-3 text-base rounded-xl border border-[#D8EFE9] bg-white text-slate-900 focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 resize-none"
-            />
-          </div>
-
-          <div className="pt-3 border-t border-[#D8EFE9] flex items-center justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsSupplierModalOpen(false)}
-              className="min-h-[44px]"
-            >
-              Hủy
-            </Button>
-            <Button type="submit" loading={isSupplierSubmitting} className="min-h-[44px] px-5">
-              {editingSupplier ? "Lưu thay đổi" : "Tạo nơi mua"}
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Confirm Delete Modals */}
       <ConfirmDeleteModal
         isOpen={!!deleteItemTarget}
         onClose={() => setDeleteItemTarget(null)}

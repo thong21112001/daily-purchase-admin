@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Store, Check, Plus, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/Badge";
+import { Store, Check, Plus, Loader2, X } from "lucide-react";
 
 export interface SupplierItem {
   _id?: string;
@@ -30,6 +29,7 @@ export function SupplierAutocomplete({
   const [results, setResults] = useState<SupplierItem[]>([]);
   const [loading, setLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchSuggestions = async (keyword: string) => {
@@ -69,6 +69,12 @@ export function SupplierAutocomplete({
     setIsOpen(false);
   };
 
+  const handleClear = () => {
+    onChange("");
+    setIsOpen(false);
+    if (inputRef.current) inputRef.current.focus();
+  };
+
   // Đóng dropdown khi click ra ngoài
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -88,22 +94,31 @@ export function SupplierAutocomplete({
     <div ref={containerRef} className="relative w-full">
       <div className="relative">
         <input
+          ref={inputRef}
           type="text"
           value={value}
           onChange={handleInputChange}
           onFocus={handleFocus}
           disabled={disabled}
           placeholder={placeholder}
-          className="w-full min-h-[44px] h-11 pl-10 pr-9 rounded-xl border border-emerald-200 bg-white text-slate-900 text-base placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all shadow-xs"
+          className="w-full min-h-[44px] h-11 pl-10 pr-16 rounded-xl border border-emerald-200 bg-white text-slate-900 text-base placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all shadow-xs"
         />
         <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-emerald-600">
           <Store className="w-4 h-4" />
         </div>
-        {loading && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-            <Loader2 className="w-4 h-4 animate-spin" />
-          </div>
-        )}
+        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          {loading && <Loader2 className="w-4 h-4 animate-spin text-slate-400" />}
+          {value && !disabled && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+              title="Xóa nơi mua"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {isOpen && (
@@ -143,26 +158,26 @@ export function SupplierAutocomplete({
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="w-full min-h-[44px] px-3 py-2 rounded-xl flex items-center gap-2 text-left text-xs text-orange-700 bg-orange-50/70 hover:bg-orange-100/70 border border-orange-200 transition-colors cursor-pointer"
+                  className="w-full min-h-[44px] px-3 py-2 text-left text-xs text-emerald-700 hover:bg-emerald-50 rounded-xl flex items-center gap-1.5 border-t border-emerald-50 mt-1"
                 >
-                  <Plus className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                  <span>Dùng nơi mua mới: <strong>&quot;{value.trim()}&quot;</strong> (sẽ tự động lưu)</span>
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>
+                    Dùng nơi mua mới: <strong className="font-semibold">&ldquo;{value.trim()}&rdquo;</strong>
+                  </span>
                 </button>
               )}
             </div>
           ) : (
-            <div className="p-3 text-center">
+            <div className="p-3 text-center text-xs text-slate-500">
               {value.trim() ? (
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="w-full min-h-[44px] px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-semibold text-orange-700 bg-orange-50 border border-orange-200 hover:bg-orange-100 transition-colors cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5 text-orange-500" />
-                  <span>Dùng &quot;{value.trim()}&quot; làm nơi mua mới</span>
-                </button>
+                <div className="space-y-1">
+                  <p>Chưa có nơi mua &ldquo;{value}&rdquo; trong danh bạ.</p>
+                  <p className="text-[11px] text-emerald-600 font-medium">
+                    Hệ thống sẽ tự động lưu nơi mua này khi bạn bấm Lưu.
+                  </p>
+                </div>
               ) : (
-                <p className="text-xs text-slate-400">Chưa có nơi mua nào được lưu. Gõ để tạo mới.</p>
+                <p>Gõ để tìm hoặc nhập tên nơi mua mới</p>
               )}
             </div>
           )}

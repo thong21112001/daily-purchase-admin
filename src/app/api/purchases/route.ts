@@ -60,6 +60,44 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validate dữ liệu từng mặt hàng
+    for (let i = 0; i < body.items.length; i++) {
+      const it = body.items[i];
+      if (!it || typeof it !== "object" || !it.name || typeof it.name !== "string" || !it.name.trim()) {
+        return NextResponse.json(
+          {
+            success: false,
+            statusCode: 400,
+            message: `Mặt hàng thứ ${i + 1} chưa có tên hợp lệ`,
+            timestamp: new Date().toISOString(),
+          },
+          { status: 400 }
+        );
+      }
+      if (Number(it.quantity) <= 0 || isNaN(Number(it.quantity))) {
+        return NextResponse.json(
+          {
+            success: false,
+            statusCode: 400,
+            message: `Số lượng của mặt hàng "${it.name}" phải lớn hơn 0`,
+            timestamp: new Date().toISOString(),
+          },
+          { status: 400 }
+        );
+      }
+      if (Number(it.unitPrice) < 0 || isNaN(Number(it.unitPrice))) {
+        return NextResponse.json(
+          {
+            success: false,
+            statusCode: 400,
+            message: `Đơn giá của mặt hàng "${it.name}" không được là số âm`,
+            timestamp: new Date().toISOString(),
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     const newPurchase = await PurchaseService.createPurchaseLog({
       purchaseDate: body.purchaseDate,
       supplier: body.supplier,

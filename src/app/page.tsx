@@ -23,6 +23,7 @@ import {
 import Link from "next/link";
 import { EditPurchaseModal } from "@/components/entry/EditPurchaseModal";
 import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
+import { SavingsCheckinWidget } from "@/components/savings/SavingsCheckinWidget";
 
 interface PurchaseItem {
   _id?: string;
@@ -126,9 +127,12 @@ function DashboardContent() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {/* 0. Widget Điểm Danh Tiết Kiệm Mỗi Ngày */}
+      <SavingsCheckinWidget />
+
       {/* 1. Bento KPI Cards (3 ô tối giản Fresh & Free) */}
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {/* Card 1: Hôm nay (Xanh Mint chủ đạo) */}
         <Card className="bg-emerald-600 text-white border-none shadow-md shadow-emerald-600/20 p-4 sm:p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between">
@@ -149,7 +153,7 @@ function DashboardContent() {
         </Card>
 
         {/* Card 2: Hôm qua */}
-        <Card className="border border-[#D8EFE9] p-4 sm:p-5 flex flex-col justify-between shadow-soft">
+        <Card className="border border-[#D8EFE9] bg-white p-4 sm:p-5 flex flex-col justify-between shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Hôm qua</span>
             <Calendar className="w-4 h-4 text-slate-400" />
@@ -165,7 +169,7 @@ function DashboardContent() {
         </Card>
 
         {/* Card 3: Lũy kế tháng này */}
-        <Card className="border border-[#D8EFE9] p-4 sm:p-5 flex flex-col justify-between shadow-soft">
+        <Card className="border border-[#D8EFE9] bg-white p-4 sm:p-5 flex flex-col justify-between shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Tháng này ({kpis?.thisMonth.monthKey || ""})
@@ -190,7 +194,7 @@ function DashboardContent() {
       </section>
 
       {/* 2. Tiêu đề danh sách & Nút Thao Tác Nhanh */}
-      <section className="space-y-4">
+      <section className="space-y-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-900">
@@ -204,7 +208,7 @@ function DashboardContent() {
             size="sm"
             variant="peach"
             onClick={openQuickEntry}
-            className="h-10 px-3.5 text-xs font-bold gap-1.5 hidden sm:inline-flex shadow-sm shadow-orange-500/20"
+            className="min-h-[44px] px-3.5 text-xs font-bold gap-1.5 hidden sm:inline-flex shadow-sm shadow-orange-500/20"
           >
             <Plus className="w-4 h-4" />
             <span>Ghi hàng mới</span>
@@ -218,8 +222,7 @@ function DashboardContent() {
             <p className="text-xs text-slate-400">Đang đồng bộ sổ nhập hàng...</p>
           </div>
         ) : purchases.length === 0 ? (
-          /* Empty State */
-          <Card className="border-dashed border-2 border-emerald-200 p-8 sm:p-12 text-center bg-white shadow-soft">
+          <Card className="border-dashed border-2 border-emerald-200 p-8 sm:p-12 text-center bg-white shadow-xs">
             <div className="max-w-xs mx-auto space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-100">
                 <ShoppingBag className="w-6 h-6" />
@@ -236,7 +239,7 @@ function DashboardContent() {
                   fullWidth
                   variant="peach"
                   size="lg"
-                  className="h-12 text-sm font-bold gap-2 shadow-md shadow-orange-500/25"
+                  className="min-h-[48px] text-sm font-bold gap-2 shadow-md shadow-orange-500/25"
                 >
                   <Plus className="w-4 h-4" />
                   <span>+ Ghi hàng ngay</span>
@@ -255,83 +258,141 @@ function DashboardContent() {
               return (
                 <Card
                   key={purchase._id}
-                  className="border border-[#D8EFE9] bg-white overflow-hidden shadow-soft transition-all rounded-2xl"
+                  className="border border-[#D8EFE9] bg-white overflow-hidden shadow-xs rounded-2xl"
                 >
-                  {/* Header phiếu */}
-                  <div className="p-3.5 sm:p-4 bg-[#F4FBF9] border-b border-[#D8EFE9] flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-wrap min-w-0">
-                      <span className="font-mono text-xs font-bold text-emerald-800">
-                        {purchase.code}
-                      </span>
-                      <span className="text-slate-300 text-xs">•</span>
-                      <span className="font-mono text-xs text-slate-500">{timeString}</span>
+                  {/* Header phiếu: 2-tier trên Mobile (<640px), 1 dòng trên Desktop (sm:) */}
+                  <div className="p-3 sm:p-3.5 bg-[#F4FBF9] border-b border-[#D8EFE9]">
+                    {/* TIER 1 Mobile / Trái-Phải Desktop */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="font-mono text-xs font-bold text-emerald-800 shrink-0">
+                          {purchase.code}
+                        </span>
+                        <span className="text-slate-300 text-xs">•</span>
+                        <span className="font-mono text-xs text-slate-500 shrink-0">{timeString}</span>
 
-                      {purchase.supplier && (
-                        <div className="flex items-center gap-1 text-xs text-slate-700 truncate">
-                          <Store className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                          <span className="truncate font-medium">{purchase.supplier}</span>
-                        </div>
-                      )}
-
-                      <Badge
-                        variant={purchase.paymentMethod === "TRANSFER" ? "sky" : "mint"}
-                        size="sm"
-                        className="text-[10px] py-0 px-1.5 flex items-center gap-1 font-semibold"
-                      >
-                        {purchase.paymentMethod === "TRANSFER" ? (
-                          <>
-                            <CreditCard className="w-2.5 h-2.5" />
-                            <span>Chuyển khoản</span>
-                          </>
-                        ) : (
-                          <>
-                            <Banknote className="w-2.5 h-2.5" />
-                            <span>Tiền mặt</span>
-                          </>
+                        {/* Trên desktop, hiện luôn supplier & payment badge ở Tier 1 */}
+                        {purchase.supplier && (
+                          <div className="hidden sm:flex items-center gap-1 text-xs text-slate-700 truncate max-w-[200px]">
+                            <Store className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                            <span className="truncate font-medium">{purchase.supplier}</span>
+                          </div>
                         )}
-                      </Badge>
+
+                        <div className="hidden sm:block">
+                          <Badge
+                            variant={purchase.paymentMethod === "TRANSFER" ? "sky" : "mint"}
+                            size="sm"
+                            className="text-[10px] py-0 px-1.5 font-semibold"
+                          >
+                            {purchase.paymentMethod === "TRANSFER" ? "Chuyển khoản" : "Tiền mặt"}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* Tiền tổng và thao tác desktop */}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-sm sm:text-base font-extrabold font-mono tabular-nums text-slate-900">
+                          {formatVND(purchase.totalAmount)}
+                        </span>
+
+                        {(purchase.editCount || 0) >= 1 && (
+                          <Badge
+                            variant="outline"
+                            size="sm"
+                            className="hidden sm:inline-flex text-[10px] py-0 px-1.5 text-amber-700 bg-amber-50 border-amber-200"
+                          >
+                            Đã sửa (1/1)
+                          </Badge>
+                        )}
+
+                        <div className="hidden sm:flex items-center gap-1 ml-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={(purchase.editCount || 0) >= 1}
+                            onClick={() => setEditingPurchaseId(purchase._id)}
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 disabled:opacity-40"
+                            title="Sửa phiếu"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeleteTarget(purchase)}
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                            title="Xóa phiếu"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-sm sm:text-base font-extrabold font-mono tabular-nums text-slate-900 mr-1">
-                        {formatVND(purchase.totalAmount)}
-                      </span>
+                    {/* TIER 2 Mobile (chỉ hiện trên màn hình < sm) */}
+                    <div className="flex sm:hidden items-center justify-between gap-2 pt-2 mt-2 border-t border-emerald-100/60">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                        {purchase.supplier && (
+                          <div className="flex items-center gap-1 text-[11px] text-slate-700 truncate max-w-[150px]">
+                            <Store className="w-3 h-3 text-emerald-600 shrink-0" />
+                            <span className="truncate font-medium">{purchase.supplier}</span>
+                          </div>
+                        )}
 
-                      {(purchase.editCount || 0) >= 1 && (
                         <Badge
-                          variant="outline"
+                          variant={purchase.paymentMethod === "TRANSFER" ? "sky" : "mint"}
                           size="sm"
-                          className="text-[10px] py-0 px-1.5 text-amber-700 bg-amber-50 border-amber-200 shrink-0"
+                          className="text-[9px] py-0 px-1.5 font-semibold"
                         >
-                          Đã sửa (1/1)
+                          {purchase.paymentMethod === "TRANSFER" ? (
+                            <span className="flex items-center gap-0.5">
+                              <CreditCard className="w-2.5 h-2.5" /> CK
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-0.5">
+                              <Banknote className="w-2.5 h-2.5" /> TM
+                            </span>
+                          )}
                         </Badge>
-                      )}
 
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={(purchase.editCount || 0) >= 1}
-                        onClick={() => setEditingPurchaseId(purchase._id)}
-                        className="h-8 w-8 p-0 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 disabled:opacity-40 disabled:hover:bg-transparent"
-                        title={(purchase.editCount || 0) >= 1 ? "Phiếu đã sửa 1 lần (tối đa cho phép)" : "Sửa phiếu (chỉ được sửa 1 lần)"}
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </Button>
+                        {(purchase.editCount || 0) >= 1 && (
+                          <Badge
+                            variant="outline"
+                            size="sm"
+                            className="text-[9px] py-0 px-1 text-amber-700 bg-amber-50 border-amber-200"
+                          >
+                            Đã sửa
+                          </Badge>
+                        )}
+                      </div>
 
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteTarget(purchase)}
-                        className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl"
-                        title="Xóa phiếu này"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={(purchase.editCount || 0) >= 1}
+                          onClick={() => setEditingPurchaseId(purchase._id)}
+                          className="min-h-[36px] min-w-[36px] h-9 w-9 p-0 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 disabled:opacity-40"
+                          title="Sửa phiếu"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteTarget(purchase)}
+                          className="min-h-[36px] min-w-[36px] h-9 w-9 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                          title="Xóa phiếu"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
                   {/* Danh sách mặt hàng trong phiếu */}
-                  <div className="p-3.5 sm:p-4 divide-y divide-emerald-50">
+                  <div className="p-3 sm:p-4 divide-y divide-emerald-50">
                     {purchase.items.map((item, idx) => (
                       <div
                         key={idx}
@@ -362,15 +423,16 @@ function DashboardContent() {
                           </div>
                         </div>
 
-                        <div className="font-mono tabular-nums font-bold text-slate-900 text-xs shrink-0">
+                        <div className="font-bold font-mono tabular-nums text-slate-900 text-xs sm:text-sm shrink-0">
                           {formatVND(item.lineTotal)}
                         </div>
                       </div>
                     ))}
                   </div>
 
+                  {/* Ghi chú chung phiếu (nếu có) */}
                   {purchase.note && (
-                    <div className="px-4 py-2 bg-emerald-50/40 border-t border-[#D8EFE9] text-[11px] text-slate-500 italic">
+                    <div className="px-3.5 py-2 bg-slate-50/70 border-t border-[#D8EFE9] text-xs text-slate-500 italic">
                       Ghi chú: {purchase.note}
                     </div>
                   )}
@@ -381,7 +443,7 @@ function DashboardContent() {
         )}
       </section>
 
-      {/* Modal Chỉnh Sửa Phiếu (Khóa 1 lần duy nhất) */}
+      {/* Modals Sửa / Xóa */}
       <EditPurchaseModal
         isOpen={!!editingPurchaseId}
         onClose={() => setEditingPurchaseId(null)}
@@ -393,26 +455,24 @@ function DashboardContent() {
         }}
       />
 
-      {/* Modal Popup Xác Nhận Xóa Tùy Chỉnh */}
       <ConfirmDeleteModal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleConfirmDelete}
-        title="Xác nhận xóa đợt mua hàng"
-        itemName={deleteTarget?.code}
+        itemName={deleteTarget ? `Phiếu mua hàng: ${deleteTarget.code}` : ""}
+        itemAmount={deleteTarget?.totalAmount}
         itemDetails={
           deleteTarget
-            ? `${deleteTarget.items?.length || 0} mặt hàng • ${deleteTarget.supplier || "Không ghi nơi mua"}`
+            ? `Thời gian: ${formatDateVN(new Date(deleteTarget.purchaseDate))} • Gồm ${deleteTarget.itemCount} món`
             : undefined
         }
-        itemAmount={deleteTarget?.totalAmount}
         isLoading={isDeleting}
       />
     </div>
   );
 }
 
-export default function HomePage() {
+export default function DashboardPage() {
   return (
     <AdminLayoutShell>
       <DashboardContent />

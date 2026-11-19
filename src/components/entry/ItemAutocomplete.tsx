@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search, Package } from "lucide-react";
+import { Search, Package, X } from "lucide-react";
 import { formatVND } from "@/lib/utils/currency";
 
 export interface SelectedItemPayload {
@@ -26,7 +26,7 @@ export function ItemAutocomplete({
 }: ItemAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -80,6 +80,12 @@ export function ItemAutocomplete({
     setIsOpen(false);
   };
 
+  const handleClear = () => {
+    onChange("");
+    setIsOpen(false);
+    if (inputRef.current) inputRef.current.focus();
+  };
+
   return (
     <div ref={containerRef} className="relative w-full">
       <div className="relative">
@@ -96,10 +102,20 @@ export function ItemAutocomplete({
           }}
           autoFocus={autoFocus}
           placeholder="Tên mặt hàng (VD: Cà phê, Sữa đặc, Chanh...)"
-          className="w-full min-h-[44px] h-11 px-4 pr-10 rounded-xl border border-[#D8EFE9] bg-white text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all font-medium shadow-xs"
+          className="w-full min-h-[44px] h-11 pl-4 pr-16 rounded-xl border border-[#D8EFE9] bg-white text-slate-900 placeholder:text-slate-400 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all font-medium shadow-xs"
         />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-          <Search className="w-4 h-4" />
+        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1 text-slate-400">
+          {value && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+              title="Xóa tên mặt hàng"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+          <Search className="w-4 h-4 pointer-events-none mr-1" />
         </div>
       </div>
 
@@ -116,18 +132,18 @@ export function ItemAutocomplete({
               onClick={() => handleSelect(item)}
               className="w-full min-h-[44px] px-3.5 py-2.5 text-left flex items-center justify-between hover:bg-emerald-50/70 cursor-pointer active:bg-emerald-100/60 transition-colors"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <Package className="w-4 h-4 text-emerald-500 shrink-0" />
-                <div>
-                  <span className="block text-sm font-semibold text-slate-900 leading-snug">
+                <div className="min-w-0">
+                  <span className="block text-sm font-semibold text-slate-900 leading-snug truncate">
                     {item.name}
                   </span>
-                  <span className="block text-[11px] text-slate-500 leading-none mt-0.5">
+                  <span className="block text-[11px] text-slate-500 leading-none mt-0.5 truncate">
                     {item.category} • Đơn vị: {item.defaultUnit}
                   </span>
                 </div>
               </div>
-              <div className="text-right shrink-0">
+              <div className="text-right shrink-0 ml-2">
                 <span className="block text-xs font-bold font-mono tabular-nums text-emerald-700">
                   {formatVND(item.lastUnitPrice)}
                 </span>
